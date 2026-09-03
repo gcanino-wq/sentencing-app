@@ -508,3 +508,135 @@ describe('every step carries a citation', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Verified against the 2025 Guidelines Manual, 2026-09-03.
+// ---------------------------------------------------------------------------
+
+describe('§ 2B3.1 as verified against the manual', () => {
+  it('caps the combined weapon and injury increases at 11 levels', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:2113',
+            // 7 + 6 = 13 between them, which the guideline limits to 11.
+            socs: [{ id: 'firearm-discharged' }, { id: 'permanent-injury' }],
+          }),
+        ],
+      }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(20 + 11);
+    expect(result.flags.some((f) => f.code === 'soc-group-cap')).toBe(true);
+  });
+
+  it('leaves the weapon and injury increases alone below the cap', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:2113',
+            socs: [{ id: 'firearm-brandished' }, { id: 'bodily-injury' }],
+          }),
+        ],
+      }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(20 + 5 + 2);
+    expect(result.flags.some((f) => f.code === 'soc-group-cap')).toBe(false);
+  });
+
+  it('uses its own loss table, not the § 2B1.1 table', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({ id: 'c1', statuteId: '18:2113', loss: { actualLoss: 600_000 } }),
+        ],
+      }),
+    );
+    // § 2B3.1(b)(7)(D) adds 3 for loss over $500,000. The § 2B1.1 table would add 14.
+    const step = result.counts[0]!.steps.find((s) => s.citation === '§ 2B3.1(b)(7)');
+    expect(step?.levels).toBe(3);
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(23);
+  });
+
+  it('recognises the intermediate degrees of injury', () => {
+    const result = calculate(
+      makeCase({
+        counts: [makeCount({ id: 'c1', statuteId: '18:2113', socs: [{ id: 'injury-between-b-c' }] })],
+      }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(25);
+  });
+});
+
+describe('§ 2K2.1 as verified against the manual', () => {
+  it('places use in connection with another felony at (b)(7)(B)', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:922(g)',
+            socs: [{ id: 'base:a6' }, { id: 'another-felony' }],
+          }),
+        ],
+      }),
+    );
+    const step = result.counts[0]!.steps.find((s) => s.label.includes('another felony offense'));
+    expect(step?.citation).toBe('§ 2K2.1(b)(7)(B)');
+    // 14 + 4 = 18, which is also the floor the subsection imposes.
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(18);
+  });
+
+  it('scores machinegun conversion devices', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:922(g)',
+            socs: [{ id: 'base:a6' }, { id: 'mcd-30' }],
+          }),
+        ],
+      }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(18);
+    expect(
+      result.counts[0]!.steps.some((s) => s.citation === '§ 2K2.1(b)(5)(B)'),
+    ).toBe(true);
+  });
+
+  it('caps the level reached through (b)(1)–(b)(5) at 29', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:922(g)',
+            // 26 + 10 firearms + 4 serial = 40, limited to 29.
+            socs: [{ id: 'base:a1' }, { id: 'firearms-200' }, { id: 'altered-serial' }],
+          }),
+        ],
+      }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(29);
+  });
+
+  it('lifts the cap where the portable-rocket provision applies', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:922(g)',
+            socs: [{ id: 'base:a1' }, { id: 'firearms-200' }, { id: 'destructive-device-rocket' }],
+          }),
+        ],
+      }),
+    );
+    // 26 + 10 + 15 = 51, clamped to 43 by the table ceiling, not by the 29 cap.
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(43);
+  });
+});

@@ -83,11 +83,12 @@ function resolveSocs(
 const WEAPON_SOC_IDS = new Set([
   'weapon', // § 2D1.1(b)(1)
   'firearm-discharged',
-  'firearm-otherwise-used',
+  'firearm-specific-threat',
   'firearm-brandished',
   'weapon-otherwise-used',
   'weapon-brandished',
-  'another-felony', // § 2K2.1(b)(6)(B)
+  'threat-of-death',
+  'another-felony', // § 2K2.1(b)(7)(B)
 ]);
 
 export function computeCount(count: CountInput, ctx: Chapter2Context): CountResult {
@@ -243,8 +244,15 @@ export function computeCount(count: CountInput, ctx: Chapter2Context): CountResu
     const isBenefit = guideline.quantityDriver === 'benefit';
     const loss = resolveLoss(count.loss);
     const amount = isBenefit ? Math.max(count.benefitValue ?? 0, loss.amount) : loss.amount;
-    const increase = lossIncrease(amount);
-    const citation = isBenefit ? '§ 2C1.1(b)(2)' : '§ 2B1.1(b)(1)';
+    const ownTable = guideline.ownLossTable;
+    const increase = ownTable
+      ? (ownTable.find((row) => amount > row.moreThan)?.increase ?? 0)
+      : lossIncrease(amount);
+    const citation = ownTable
+      ? (guideline.ownLossCitation ?? `§ ${guideline.section}(b)`)
+      : isBenefit
+        ? '§ 2C1.1(b)(2)'
+        : '§ 2B1.1(b)(1)';
 
     if (amount > 0) {
       const basisNote = isBenefit
@@ -303,6 +311,7 @@ export function computeCount(count: CountInput, ctx: Chapter2Context): CountResu
   }
 
   // --- Specific offense characteristics ------------------------------------
+  const baseLevelForCaps = level;
   const { applied, suppressed } = resolveSocs(guideline, count.socs);
   let floor = 0;
 
@@ -394,6 +403,63 @@ export function computeCount(count: CountInput, ctx: Chapter2Context): CountResu
       levels: -2,
     });
     level -= 2;
+  }
+
+  // --- Cumulative caps ------------------------------------------------------
+  // Some guidelines limit the combined effect of a named set of characteristics.
+  // § 2B3.1 caps the weapon and injury increases at 11 levels between them;
+  // § 2K2.1 caps the level reached after (b)(1)-(b)(5) at 29.
+  const appliedIds = new Set(applied.map((soc) => soc.id));
+
+  for (const cap of guideline.socGroupCaps ?? []) {
+    const inGroup = applied.filter((soc) => cap.socIds.includes(soc.id));
+    const total = inGroup.reduce((sum, soc) => sum + soc.levels, 0);
+    if (total > cap.maxLevels) {
+      const excess = total - cap.maxLevels;
+      steps.push({
+        kind: 'cap',
+        label: cap.label,
+        citation: cap.citation,
+        levels: -excess,
+        detail: `${inGroup.map((s) => s.citation).join(' and ')} total ${total} levels, reduced to the ${cap.maxLevels}-level limit.`,
+      });
+      level -= excess;
+      flags.push({
+        severity: 'info',
+        code: 'soc-group-cap',
+        message: `${cap.label}: the combined increase was ${total} levels and is limited to ${cap.maxLevels}.`,
+        citation: cap.citation,
+      });
+    }
+  }
+
+  for (const cap of guideline.subtotalCaps ?? []) {
+    if (cap.unlessSocIds.some((id) => appliedIds.has(id))) {
+      steps.push({
+        kind: 'cap',
+        label: cap.label,
+        citation: cap.citation,
+        levels: 0,
+        suppressed: true,
+        detail: `Not applied — ${cap.unlessSocIds.filter((id) => appliedIds.has(id)).join(', ')} lifts the cap.`,
+      });
+      continue;
+    }
+    const subtotal =
+      applied
+        .filter((soc) => cap.afterSocIds.includes(soc.id))
+        .reduce((sum, soc) => sum + soc.levels, 0) + baseLevelForCaps;
+    if (subtotal > cap.maxLevel) {
+      const excess = subtotal - cap.maxLevel;
+      steps.push({
+        kind: 'cap',
+        label: cap.label,
+        citation: cap.citation,
+        levels: -excess,
+        detail: `The level after those characteristics was ${subtotal}, above the limit of ${cap.maxLevel}.`,
+      });
+      level -= excess;
+    }
   }
 
   // --- Floors from characteristics -----------------------------------------

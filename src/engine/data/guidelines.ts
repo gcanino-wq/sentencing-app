@@ -37,6 +37,27 @@ export interface SocOption {
 
 export type QuantityDriver = 'drug' | 'loss' | 'tax' | 'benefit' | 'none';
 
+/** Caps the SUM of a named set of characteristics, e.g. § 2B3.1's 11-level limit. */
+export interface SocGroupCap {
+  socIds: string[];
+  maxLevels: number;
+  citation: string;
+  label: string;
+}
+
+/**
+ * Caps the offense level reached after a named set of characteristics, e.g.
+ * § 2K2.1's level-29 limit on (b)(1)-(b)(5). `unlessSocIds` names the
+ * characteristics whose application lifts the cap.
+ */
+export interface SubtotalCap {
+  afterSocIds: string[];
+  maxLevel: number;
+  unlessSocIds: string[];
+  citation: string;
+  label: string;
+}
+
 export interface GuidelineDef {
   section: string;
   title: string;
@@ -54,6 +75,11 @@ export interface GuidelineDef {
    * quantity across counts. Drives the grouping proposal.
    */
   groupsByQuantity: boolean;
+  /** Second loss table used by a guideline that has its own, e.g. § 2B3.1(b)(7). */
+  ownLossTable?: readonly { moreThan: number; increase: number }[];
+  ownLossCitation?: string;
+  socGroupCaps?: SocGroupCap[];
+  subtotalCaps?: SubtotalCap[];
   note?: string;
 }
 
@@ -218,15 +244,40 @@ const G_2B3_1: GuidelineDef = {
   structured: true,
   confidence: V,
   summary:
-    'Base level 20, then characteristics for the weapon, injury, restraint, and carjacking. Counts with different victims do not group.',
-  quantityDriver: 'none',
+    'Base level 20, then characteristics for the weapon, injury, restraint, carjacking, and loss. The weapon and injury increases are capped at 11 levels combined.',
+  quantityDriver: 'loss',
   groupsByQuantity: false,
+  // § 2B3.1(b)(7) has its own loss table, distinct from § 2B1.1(b)(1).
+  ownLossTable: [
+    { moreThan: 9_500_000, increase: 7 },
+    { moreThan: 5_000_000, increase: 6 },
+    { moreThan: 3_000_000, increase: 5 },
+    { moreThan: 1_500_000, increase: 4 },
+    { moreThan: 500_000, increase: 3 },
+    { moreThan: 95_000, increase: 2 },
+    { moreThan: 20_000, increase: 1 },
+    { moreThan: -1, increase: 0 },
+  ],
+  ownLossCitation: '§ 2B3.1(b)(7)',
   baseOptions: [{ id: 'a', label: 'Robbery', level: 20, citation: '§ 2B3.1(a)', confidence: V }],
   defaultBaseLevel: 20,
+  socGroupCaps: [
+    {
+      socIds: [
+        'firearm-discharged', 'firearm-specific-threat', 'firearm-brandished',
+        'weapon-otherwise-used', 'weapon-brandished', 'threat-of-death',
+        'bodily-injury', 'injury-between-a-b', 'serious-bodily-injury',
+        'injury-between-b-c', 'permanent-injury',
+      ],
+      maxLevels: 11,
+      citation: '§ 2B3.1(b)(3); § 2B3.1 cmt. n.4',
+      label: 'Combined weapon and injury adjustments capped at 11 levels',
+    },
+  ],
   socs: [
     {
       id: 'financial-institution',
-      label: 'Property of a financial institution or post office taken',
+      label: 'Property of a financial institution or post office taken, or an object of the offense',
       levels: 2,
       citation: '§ 2B3.1(b)(1)',
       confidence: V,
@@ -240,12 +291,14 @@ const G_2B3_1: GuidelineDef = {
       exclusiveGroup: 'weapon',
     },
     {
-      id: 'firearm-otherwise-used',
-      label: 'Firearm otherwise used',
+      id: 'firearm-specific-threat',
+      label:
+        'Firearm used to convey a specific threat of harm, or to make physical contact with a victim',
       levels: 6,
       citation: '§ 2B3.1(b)(2)(B)',
       confidence: V,
       exclusiveGroup: 'weapon',
+      note: 'A specific rather than general threat — pointing the firearm at a particular victim, directing a victim\u2019s movement with it, or a pistol whip.',
     },
     {
       id: 'firearm-brandished',
@@ -270,10 +323,11 @@ const G_2B3_1: GuidelineDef = {
       citation: '§ 2B3.1(b)(2)(E)',
       confidence: V,
       exclusiveGroup: 'weapon',
+      note: 'Includes an object that closely resembles a weapon, or one used to create that impression. § 2B3.1 cmt. n.2.',
     },
     {
       id: 'threat-of-death',
-      label: 'Express threat of death',
+      label: 'Threat of death made',
       levels: 2,
       citation: '§ 2B3.1(b)(2)(F)',
       confidence: V,
@@ -288,10 +342,26 @@ const G_2B3_1: GuidelineDef = {
       exclusiveGroup: 'injury',
     },
     {
+      id: 'injury-between-a-b',
+      label: 'Injury between bodily and serious bodily injury',
+      levels: 3,
+      citation: '§ 2B3.1(b)(3)(D)',
+      confidence: V,
+      exclusiveGroup: 'injury',
+    },
+    {
       id: 'serious-bodily-injury',
       label: 'Serious bodily injury',
       levels: 4,
       citation: '§ 2B3.1(b)(3)(B)',
+      confidence: V,
+      exclusiveGroup: 'injury',
+    },
+    {
+      id: 'injury-between-b-c',
+      label: 'Injury between serious and permanent or life-threatening',
+      levels: 5,
+      citation: '§ 2B3.1(b)(3)(E)',
       confidence: V,
       exclusiveGroup: 'injury',
     },
@@ -313,7 +383,7 @@ const G_2B3_1: GuidelineDef = {
     },
     {
       id: 'physically-restrained',
-      label: 'Person physically restrained to facilitate commission or escape',
+      label: 'Freedom of movement restricted by physical contact or confinement',
       levels: 2,
       citation: '§ 2B3.1(b)(4)(B)',
       confidence: V,
@@ -328,13 +398,13 @@ const G_2B3_1: GuidelineDef = {
     },
     {
       id: 'firearm-taken',
-      label: 'Firearm, destructive device, or controlled substance was taken',
+      label: 'Firearm, destructive device, or controlled substance taken, or an object of the offense',
       levels: 1,
       citation: '§ 2B3.1(b)(6)',
       confidence: V,
     },
   ],
-  note: 'Robbery counts are excluded from § 3D1.2(d) aggregation. Separate victims mean separate groups.',
+  note: 'Robbery counts are excluded from § 3D1.2(d) aggregation. Separate victims mean separate groups. "Loss" here means the value of the property taken, damaged, or destroyed. § 2B3.1 cmt. n.3.',
 };
 
 // ---------------------------------------------------------------------------
@@ -473,17 +543,19 @@ const G_2D1_1: GuidelineDef = {
 
 const G_2K2_1: GuidelineDef = {
   section: '2K2.1',
-  title: 'Unlawful Receipt, Possession, or Transportation of Firearms',
+  title:
+    'Unlawful Receipt, Possession, or Transportation of Firearms or Ammunition; Prohibited Transactions',
   structured: true,
   confidence: V,
   summary:
-    'Base level driven by prior crime-of-violence or controlled-substance convictions and the type of firearm, then characteristics for quantity, stolen firearms, trafficking, and use in connection with another felony.',
+    'Base level driven by prior crime-of-violence or controlled-substance convictions and the type of firearm, then characteristics for quantity, destructive devices, stolen firearms, machinegun conversion devices, trafficking, and use in connection with another felony.',
   quantityDriver: 'none',
   groupsByQuantity: true,
   baseOptions: [
     {
       id: 'a1',
-      label: 'Large-capacity semiautomatic or § 5845(a) firearm, and two prior COV/CSO convictions',
+      label:
+        'Large-capacity semiautomatic or § 5845(a) firearm, and two prior felony convictions for a crime of violence or controlled substance offense',
       level: 26,
       citation: '§ 2K2.1(a)(1)',
       confidence: V,
@@ -497,7 +569,8 @@ const G_2K2_1: GuidelineDef = {
     },
     {
       id: 'a3',
-      label: 'Large-capacity semiautomatic or § 5845(a) firearm, and one prior COV/CSO conviction',
+      label:
+        'Large-capacity semiautomatic or § 5845(a) firearm, and one prior felony conviction for a crime of violence or controlled substance offense',
       level: 22,
       citation: '§ 2K2.1(a)(3)',
       confidence: V,
@@ -510,22 +583,51 @@ const G_2K2_1: GuidelineDef = {
       confidence: V,
     },
     {
+      id: 'a4b',
+      label:
+        'Large-capacity semiautomatic or § 5845(a) firearm, and the defendant was a prohibited person, or convicted under § 922(d), § 932, or § 933, or under § 922(a)(6) / § 924(a)(1)(A) with knowledge of transfer to a prohibited person',
+      level: 20,
+      citation: '§ 2K2.1(a)(4)(B)',
+      confidence: V,
+    },
+    {
       id: 'a5',
-      label: 'Firearm described in 26 U.S.C. § 5845(a)',
+      label: 'Offense involved a firearm described in 26 U.S.C. § 5845(a)',
       level: 18,
       citation: '§ 2K2.1(a)(5)',
       confidence: V,
     },
     {
       id: 'a6',
-      label: 'Defendant was a prohibited person at the time of the offense',
+      label:
+        'Prohibited person at the time of the offense, or convicted under § 922(d), § 932, or § 933, or under § 922(a)(6) / § 924(a)(1)(A) with knowledge of transfer to a prohibited person',
       level: 14,
       citation: '§ 2K2.1(a)(6)',
       confidence: V,
     },
     { id: 'a7', label: 'Otherwise', level: 12, citation: '§ 2K2.1(a)(7)', confidence: V },
+    {
+      id: 'a8',
+      label: 'Convicted under 18 U.S.C. § 922(c), (e), (f), (m), (s), (t), or (x)(1), or § 1715',
+      level: 6,
+      citation: '§ 2K2.1(a)(8)',
+      confidence: V,
+    },
   ],
   defaultBaseLevel: 14,
+  subtotalCaps: [
+    {
+      afterSocIds: [
+        'firearms-3-7', 'firearms-8-24', 'firearms-25-99', 'firearms-100-199', 'firearms-200',
+        'sporting', 'destructive-device-rocket', 'destructive-device-other',
+        'stolen', 'altered-serial', 'mcd-4-or-transfer', 'mcd-30',
+      ],
+      maxLevel: 29,
+      unlessSocIds: ['destructive-device-rocket'],
+      citation: '§ 2K2.1(b)(5)',
+      label: 'Cumulative level from (b)(1)–(b)(5) capped at 29',
+    },
+  ],
   socs: [
     {
       id: 'firearms-3-7',
@@ -568,6 +670,31 @@ const G_2K2_1: GuidelineDef = {
       exclusiveGroup: 'count',
     },
     {
+      id: 'sporting',
+      label: 'All firearms and ammunition possessed solely for lawful sporting purposes or collection',
+      levels: 0,
+      citation: '§ 2K2.1(b)(2)',
+      confidence: V,
+      note: 'Reduces the offense level to 6. Unavailable where (a)(1)–(a)(5) set the base level.',
+    },
+    {
+      id: 'destructive-device-rocket',
+      label: 'Destructive device that is a portable rocket, a missile, or a launching device',
+      levels: 15,
+      citation: '§ 2K2.1(b)(3)(A)',
+      confidence: V,
+      exclusiveGroup: 'destructive',
+      note: 'Applying this lifts the level-29 cumulative cap.',
+    },
+    {
+      id: 'destructive-device-other',
+      label: 'Any other destructive device',
+      levels: 2,
+      citation: '§ 2K2.1(b)(3)(B)',
+      confidence: V,
+      exclusiveGroup: 'destructive',
+    },
+    {
       id: 'stolen',
       label: 'Firearm was stolen',
       levels: 2,
@@ -577,35 +704,87 @@ const G_2K2_1: GuidelineDef = {
     },
     {
       id: 'altered-serial',
-      label: 'Firearm had an altered or obliterated serial number',
+      label: 'Serial number modified so as to be illegible, or firearm knowingly unmarked',
       levels: 4,
       citation: '§ 2K2.1(b)(4)(B)',
       confidence: V,
       exclusiveGroup: 'stolen',
     },
     {
-      id: 'trafficking',
-      label: 'Trafficking in firearms',
-      levels: 5,
-      citation: '§ 2K2.1(b)(5)',
+      id: 'mcd-4-or-transfer',
+      label: 'Possessed four or more machinegun conversion devices, or transferred or sold any',
+      levels: 2,
+      citation: '§ 2K2.1(b)(5)(A)',
       confidence: V,
+      exclusiveGroup: 'mcd',
+      note: 'A part or combination of parts designed solely for converting a weapon into a machinegun — a "switch."',
+    },
+    {
+      id: 'mcd-30',
+      label: 'Possessed 30 or more machinegun conversion devices',
+      levels: 4,
+      citation: '§ 2K2.1(b)(5)(B)',
+      confidence: V,
+      exclusiveGroup: 'mcd',
+    },
+    {
+      id: 'trafficking-933',
+      label: 'Convicted under 18 U.S.C. § 933(a)(2) or (a)(3)',
+      levels: 2,
+      citation: '§ 2K2.1(b)(6)(A)',
+      confidence: V,
+      exclusiveGroup: 'trafficking',
+    },
+    {
+      id: 'trafficking-prohibited-person',
+      label: 'Trafficked a firearm or ammunition to a prohibited person, or for unlawful use',
+      levels: 2,
+      citation: '§ 2K2.1(b)(6)(B)',
+      confidence: V,
+      exclusiveGroup: 'trafficking',
+    },
+    {
+      id: 'trafficking-two-or-more',
+      label: 'Trafficked two or more firearms to a person with a qualifying prior or under a criminal justice sentence',
+      levels: 5,
+      citation: '§ 2K2.1(b)(6)(C)',
+      confidence: V,
+      exclusiveGroup: 'trafficking',
+    },
+    {
+      id: 'out-of-country',
+      label: 'Firearm or ammunition possessed while leaving, or intended to be transported out of, the United States',
+      levels: 4,
+      citation: '§ 2K2.1(b)(7)(A)',
+      confidence: V,
+      minimumLevel: 18,
+      exclusiveGroup: 'b7',
     },
     {
       id: 'another-felony',
-      label: 'Used or possessed any firearm in connection with another felony offense',
+      label: 'Used or possessed any firearm or ammunition in connection with another felony offense',
       levels: 4,
-      citation: '§ 2K2.1(b)(6)(B)',
+      citation: '§ 2K2.1(b)(7)(B)',
       confidence: V,
       minimumLevel: 18,
-      note: 'Triggers the § 2K2.1(c)(1) cross reference where the other offense produces a higher level.',
+      exclusiveGroup: 'b7',
+      note: 'Also triggers the § 2K2.1(c)(1) cross reference where the other offense produces a higher level.',
     },
     {
-      id: 'sporting',
-      label: 'Solely lawful sporting purposes or collection',
-      levels: 0,
-      citation: '§ 2K2.1(b)(2)',
+      id: 'group-of-five',
+      label: 'Committed in connection with participation in a group of five or more with criminal purposes',
+      levels: 2,
+      citation: '§ 2K2.1(b)(9)',
       confidence: V,
-      note: 'Reduces the offense level to 6. Applied as a cap, not a delta.',
+      note: 'Requires a § 2K2.1(b)(6) enhancement.',
+    },
+    {
+      id: 'coerced-or-vulnerable',
+      label: 'Motivated by an intimate or familial relationship, threats, or fear, or unusually vulnerable to inducement',
+      levels: -2,
+      citation: '§ 2K2.1(b)(10)',
+      confidence: V,
+      note: 'Requires a § 2K2.1(b)(6) enhancement and no more than one criminal history point.',
     },
   ],
 };

@@ -22,9 +22,9 @@ export const ZERO_POINT_CRITERIA: { id: ZeroPointCriterion; label: string; citat
   { id: 'noDeathOrSeriousInjury', label: 'The offense did not result in death or serious bodily injury', citation: '§ 4C1.1(a)(4)' },
   { id: 'notSexOffense', label: 'The instant offense is not a sex offense', citation: '§ 4C1.1(a)(5)' },
   { id: 'noSubstantialFinancialHardship', label: 'Did not personally cause substantial financial hardship', citation: '§ 4C1.1(a)(6)' },
-  { id: 'noFirearmInConnection', label: 'Did not possess a firearm or dangerous weapon in connection with the offense', citation: '§ 4C1.1(a)(7)' },
+  { id: 'noFirearmInConnection', label: 'Did not possess, receive, purchase, transport, transfer, sell, or dispose of a firearm or dangerous weapon in connection with the offense, or induce another participant to do so', citation: '§ 4C1.1(a)(7)' },
   { id: 'notCivilRightsOffense', label: 'The instant offense is not covered by § 2H1.1', citation: '§ 4C1.1(a)(8)' },
-  { id: 'noHateCrimeOrVulnerableVictim', label: 'Did not receive a § 3A1.1 hate crime or vulnerable victim adjustment', citation: '§ 4C1.1(a)(9)' },
+  { id: 'noHateCrimeOrVulnerableVictim', label: 'Did not receive a § 3A1.1 hate crime or vulnerable victim adjustment, or a § 3A1.5 serious human rights offense adjustment', citation: '§ 4C1.1(a)(9)' },
   { id: 'noAggravatingRole', label: 'Did not receive a § 3B1.1 aggravating role adjustment', citation: '§ 4C1.1(a)(10)' },
   { id: 'notEngagedInCCE', label: 'Was not engaged in a continuing criminal enterprise, as defined in 21 U.S.C. § 848', citation: '§ 4C1.1(a)(11)' },
 ];

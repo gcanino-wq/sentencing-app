@@ -10,56 +10,60 @@ the encoding date (2026-09-03) are not reflected.
 Every item below is a table or rule the calculation depends on. Each lives in an
 isolated module, so a correction is a one-line edit — no logic changes.
 
-## Partial verification pass, 2026-09-03
+## Verification against the 2025 Manual, 2026-09-03
 
-The published manual could not be reached from the build environment (ussc.gov is
-blocked by the network egress policy — confirmed via HTTP client, curl, and a real
-browser). What follows was checked against secondary sources via web search. Search
-is good enough to settle a discrete rule or a single number; it is **not** good
-enough to verify a 258-cell table or the text of a guideline, so most of the
-checklist below is untouched.
+The 2025 Guidelines Manual was supplied directly and checked against the encoded
+data. This section records what was compared, what matched, and what was wrong.
 
-### Confirmed
+### Verified — no discrepancy
 
-| Item | Result |
+| Item | How it was checked |
 | --- | --- |
-| § 4A1.1(e) status point | Correct. One point, and only where the defendant already has 7 or more points under (a)–(d), per Amendment 821. |
-| § 922(g) statutory maximum | Correct at 15 years under 18 U.S.C. § 924(a)(8), raised from 10 by the Bipartisan Safer Communities Act (June 2022). The offense-date caveat in the data is warranted. |
-| Methamphetamine conversion ratios | Correct. A court document puts 90 g of methamphetamine (actual) at 1,818 kg converted — approximately 20 kg per gram, ten times the mixture ratio. |
-| Cocaine base ratio | Correct at 3,571 g converted per gram (Amendment 748). |
-| § 2B1.1(b)(1) loss table shape | Correct: 16 tiers running 0 to 30 levels. **Individual bracket amounts remain unverified.** |
-| Sentencing Table, level 26 / Category I | 63–78 months, matching the encoded cell. One cell of 258. |
+| **Sentencing Table, all 258 cells** | Parsed from the manual's own table markup and diffed cell by cell. 222 cells compared directly; the remaining 36 sit in three rows where two offense levels are merged in the source, and were recovered by enumerating every valid split and eliminating all but one using the already-verified rows above and below. Zero discrepancies. |
+| § 4A1.1(a)–(e) point values | Read directly. Includes the (e) status point requiring 7 or more points under (a)–(d). |
+| § 4C1.1 — eleven criteria | Read directly. Confirms the correction below. |
+| § 2B3.1(a) base level, (b)(1), (b)(2)(A)–(F), (b)(3)(A)–(C), (b)(4), (b)(5), (b)(6) | Read directly. |
+| § 2K2.1(a)(1)–(a)(8) base levels and (b)(1) firearm-count table | Read directly. |
+| § 922(g) statutory maximum of 15 years | 18 U.S.C. § 924(a)(8), via secondary sources. |
+| Methamphetamine actual/mixture and cocaine base conversion ratios | Secondary sources, including a court document putting 90 g of methamphetamine (actual) at ~1,818 kg converted. |
 
 ### Corrected
 
-| Item | Defect |
-| --- | --- |
-| § 4C1.1 criteria | Encoded as **ten** criteria with the aggravating-role and continuing-criminal-enterprise conditions combined in (a)(10). The 2024 amendment split them into (a)(10) and (a)(11), so there are **eleven**. The outcome was already correct — both conditions were required — but the citation and the count were wrong. Fixed. |
+| Guideline | Defect | Consequence |
+| --- | --- | --- |
+| **§ 2B3.1(b)(7)** | The loss table was **missing entirely**. § 2B3.1 has its own table, distinct from § 2B1.1(b)(1), running +1 above $20,000 to +7 above $9,500,000. | Robbery and carjacking losses produced no increase at all. |
+| **§ 2B3.1 cmt. n.4** | The **11-level cap** on the combined weapon and injury adjustments was not implemented. | Over-calculation in exactly the cases where both apply — an armed robbery causing injury. |
+| **§ 2B3.1(b)(3)(D), (E)** | The two intermediate degrees of injury (+3 and +5) were missing. | No way to score an injury between the enumerated degrees. |
+| **§ 2B3.1(b)(2)(B)** | Labelled "firearm otherwise used." The current text turns on a **specific** threat of harm or physical contact with a victim. | Right level, misleading label. |
+| **§ 2K2.1(b)(7)(B)** | "Used or possessed a firearm in connection with another felony offense" was cited as **(b)(6)(B)**. In the current manual (b)(6) is firearms trafficking. | Wrong citation on a provision used constantly, in a worksheet meant to be checkable. |
+| **§ 2K2.1(b)(5)** | **Machinegun conversion devices** were missing — +2 for four or more or any transfer, +4 for 30 or more. | A switch case could not be scored. |
+| **§ 2K2.1(b)(5) cap** | The **level-29 cap** on the cumulative result of (b)(1)–(b)(5) was not implemented, nor the exception where (b)(3)(A) applies. | Over-calculation in large-quantity firearm cases. |
+| **§ 2K2.1(a)(8), (b)(3), (b)(6)(A)–(C), (b)(7)(A), (b)(9), (b)(10)** | All missing. | Destructive devices, trafficking tiers, transport out of the country, the group-of-five increase and the coercion reduction could not be applied. |
+| **§ 4C1.1** | Encoded as **ten** criteria with the aggravating-role and continuing-criminal-enterprise conditions combined. The manual has **eleven**. Criteria (7) and (9) were also narrower than the text. | Outcome was already right; the citation and count were wrong. |
 
-### Open risk: the 2025 amendment cycle
+Each correction is covered by a test asserting the manual's numbers, so a
+regression fails the suite rather than reaching a worksheet.
 
-This is the most serious gap and it is not resolved.
+### Still unverified
 
-The amendments effective **November 1, 2025** — the edition this build claims to
-encode — included a "simplification" package that reportedly touched:
+The pass above covered the Sentencing Table, Chapter 4's scoring rules, and the
+two Chapter 2 guidelines flagged as highest-risk. **Not yet checked against the
+manual:**
 
-- the § 1B1.1 three-step application process and the use of **departures**
-- **mitigating-role adjustments in drug cases** (§ 2D1.1(a)(5))
-- **specific offense characteristics in robbery and extortion** (§ 2B3.1)
-- **firearm enhancements** (§ 2K2.1)
-- **criminal history calculations** (Chapter 4)
-- **supervised release** (§ 5D1.2)
+- § 2B1.1(b)(1) loss table brackets, § 2T4.1, § 5E1.2 fine table, § 3D1.4 units,
+  § 4B1.1(b) career offender table, § 5D1.2 supervised release
+- The § 2D1.1(c) Drug Quantity Table and the full Drug Conversion Tables
+- § 2D1.1(a)(5) mitigating-role cap, which the 2025 amendments also touched
+- § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their numbering
+- Chapter 3 adjustment values, and § 5G1.1 / § 5G1.2 text
+- Appendix A statute-to-guideline mappings
+- § 3A1.5 (Serious Human Rights Offense), which § 4C1.1(a)(9) references and
+  which this build does not encode at all
 
-Four of those are encoded here, and two — § 2B3.1 and § 2K2.1 — are priority
-docket guidelines. The encoding was done from knowledge of the guidelines'
-structure and may reflect the **pre-amendment** form in these areas. Nothing in
-this build should be relied on for a robbery, carjacking, firearm, or
-mitigating-role drug calculation until § 2B3.1, § 2K2.1, § 2D1.1(a)(5), and
-Chapter 4 are read against the 2025 manual directly.
-
-Resolving this needs the manual itself. Search summaries are too coarse to
-reconstruct amended guideline text, and reconstructing it from memory is exactly
-the failure mode this document exists to guard against.
+The lesson from what was found: the errors clustered exactly where predicted —
+in the guidelines the November 2025 amendments restructured. The remaining
+unverified items in that same category, particularly § 2D1.1(a)(5), should be
+treated as suspect until checked.
 
 ## How confidence is marked
 
