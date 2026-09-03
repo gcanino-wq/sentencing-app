@@ -764,3 +764,47 @@ describe('§ 5D1.2 as verified against the manual', () => {
     expect(result.chapter5.supervisedRelease.min).toBe(60);
   });
 });
+
+describe('statutory penalties as verified', () => {
+  const drugCase = (safetyValve?: Record<string, boolean>) =>
+    calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '21:841(b)(1)(A)',
+            drugs: [{ substanceId: 'cocaine', quantity: 10, unit: 'kg' }],
+            section851Priors: 1,
+          }),
+        ],
+        safetyValve,
+      }),
+    );
+
+  it('applies the § 851 one-prior tier: 15 years, and 10 years supervised release', () => {
+    const result = drugCase();
+    expect(result.statutory.minMonths).toBe(180);
+    expect(result.chapter5.supervisedRelease.min).toBe(120);
+    expect(result.flags.some((f) => f.code === 'section-851')).toBe(true);
+  });
+
+  it('does not extend the safety valve past the offenses § 5C1.2 names', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:924(e)', // ACCA — a 15-year minimum the safety valve cannot reach
+          }),
+        ],
+        safetyValve: ALL_SAFETY_VALVE,
+      }),
+    );
+    expect(result.statutory.minMonths).toBe(180);
+    expect(result.flags.some((f) => f.code === 'safety-valve-scope')).toBe(true);
+  });
+
+  it('still relieves a § 841 minimum, which § 5C1.2 does name', () => {
+    expect(drugCase(ALL_SAFETY_VALVE).statutory.minMonths).toBe(0);
+  });
+});

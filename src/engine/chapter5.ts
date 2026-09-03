@@ -56,6 +56,21 @@ export function safetyValveSatisfied(input: CaseInput): boolean {
   return SAFETY_VALVE_CRITERIA.every((c) => sel[c.id] === true);
 }
 
+/**
+ * § 5C1.2 relieves the mandatory minimum only for the offenses it names:
+ * 21 U.S.C. §§ 841, 844, 846, 960, 963 and 46 U.S.C. §§ 70503, 70506.
+ * A mandatory minimum on any other count survives the safety valve.
+ */
+const SAFETY_VALVE_STATUTE_SECTIONS = new Set([
+  '21:841', '21:844', '21:846', '21:960', '21:963', '46:70503', '46:70506',
+]);
+
+export function safetyValveCoversCount(count: CountInput): boolean {
+  if (!count.statuteId) return false;
+  const m = /^(\d+):(\d+)/.exec(count.statuteId);
+  return m ? SAFETY_VALVE_STATUTE_SECTIONS.has(`${m[1]}:${m[2]}`) : false;
+}
+
 /** Statutory minimum and maximum for a count, accounting for a filed § 851 information. */
 export function penaltyForCount(count: CountInput): {
   minMonths: number;
@@ -123,6 +138,14 @@ export function computeStatutory(
       minMonths = p.minMonths;
       mandatoryMinCount = count;
     }
+    if (p.minMonths > 0 && safetyValveApplies && !safetyValveCoversCount(count)) {
+      flags.push({
+        severity: 'warning',
+        code: 'safety-valve-scope',
+        message: `The safety valve does not reach ${count.label ?? 'this count'} — § 5C1.2 applies only to offenses under 21 U.S.C. §§ 841, 844, 846, 960, 963 and 46 U.S.C. §§ 70503, 70506. Its mandatory minimum still applies.`,
+        citation: '§ 5C1.2',
+      });
+    }
     if ((count.section851Priors ?? 0) > 0) {
       flags.push({
         severity: 'warning',
@@ -138,7 +161,10 @@ export function computeStatutory(
     aggregateMax = null;
   }
 
-  if (minMonths > 0 && safetyValveApplies) {
+  const valveReachesController =
+    mandatoryMinCount !== undefined && safetyValveCoversCount(mandatoryMinCount);
+
+  if (minMonths > 0 && safetyValveApplies && valveReachesController) {
     flags.push({
       severity: 'info',
       code: 'safety-valve-relief',

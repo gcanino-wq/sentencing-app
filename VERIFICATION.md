@@ -30,6 +30,11 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 4B1.1(b) career offender table** | All 7 rows match. The footnote also confirms § 3E1.1 applies to the career offender level, which is the order the engine uses. |
 | **§ 3D1.4 unit table and counting rules** | Table matches, as do the rules the grouping code implements: one unit for the highest group and each within 4 levels, half a unit for 5–8 levels below, disregard 9 or more. |
 | **§ 5E1.2(c)(3) fine table** | 15 of 16 rows diffed and matching; the last row did not parse but follows the same pattern. |
+| **Appendix A mappings** | All 59 encoded statutes located in the Statutory Index and their primary guideline compared. 54 confirmed outright; the rest are addressed below. |
+| **§ 5C1.2 safety-valve criteria** | All five read directly, including the 4-point / prior-3-point / prior-2-point-violent structure. All match. |
+| **§ 2K2.4** | Confirms the guideline sentence is the *minimum* term required by statute for § 924(c), and that Chapters 3(A)–(E) and 4 do not apply to that count — which is how the engine treats it. |
+| **18 U.S.C. § 924(c) terms** | 5 years base, 7 brandished, 10 discharged, 30 for a machinegun or silencer, 25 second-or-subsequent. All match. |
+| **21 U.S.C. § 841(b) tiers** | 10-years-to-life at (b)(1)(A), rising to 15 with one prior and 25 with two under the First Step Act; 5-to-40 at (b)(1)(B) rising to 10-to-life. All match. |
 | **Chapter 3 adjustment values** | § 3A1.1(a) +3 and (b)(1)/(b)(2) +2/+2, § 3A1.3 +2, § 3A1.4 +12 with the level-32 floor and Category VI, § 3B1.1 +4/+3/+2, § 3B1.2 −4/−2/−3, § 3B1.3 +2, § 3C1.1 +2, § 3E1.1 −2 and −1. All read directly. All match. |
 | **§ 3E1.1(b) threshold** | The level-16 test runs on the offense level *before* subsection (a) operates, which is what the engine does. |
 | **§ 5G1.1(a)–(c)** | Read directly. The clamping in both directions matches. |
@@ -55,6 +60,11 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 2D1.1(a)(5)** | Encoded as a flat cap at level 32 for a mitigating role. The rule is **graduated**: level 32 decreases by 2, level 34 by 3, above 34 down to 32, and a minimal participant lands at 30. | At level 34 the old code gave 32 where the manual gives 31 — wrong in the government's favour. The minimal-participant sentence was absent entirely. |
 | **§ 2D1.1(b)(3)** | Missing its floor of level 26. | Under-calculation on aircraft and vessel cases. |
 | **§ 2D1.1 characteristics** | (b)(4) prison distribution, (b)(5) methamphetamine importation, (b)(7) mass-marketing, (b)(11) bribing an officer, (b)(13) fentanyl misrepresentation, (b)(14)(A)–(D) with their floors, (b)(15), (b)(16) and (b)(17) were **all missing**. A non-existent "bodily injury" characteristic was encoded at (b)(13), which is actually fentanyl misrepresentation. | Most § 2D1.1 enhancements could not be applied, and one cited a subsection that says something else. |
+| **21 U.S.C. § 841(b)(1)(A), one § 851 prior** | Supervised release minimum encoded as **8 years**. The statute requires at least **10**; the 4-to-8 step belongs to § 841(b)(1)(B). | Understated the supervised release floor in exactly the § 851 cases where it matters most. |
+| **§ 5C1.2 scope** | The safety valve was applied to **any** mandatory minimum. § 5C1.2 reaches only 21 U.S.C. §§ 841, 844, 846, 960, 963 and 46 U.S.C. §§ 70503, 70506. | A minimum the safety valve cannot touch — an ACCA or § 924(c) term — was being relieved. The engine now leaves it standing and says why. |
+| **Appendix A — 18 U.S.C. § 1349** | Encoded with § 2B1.1 primary. The index maps § 1349 to **§ 2X1.1 alone**, which then directs to the object offense. | Wrong primary guideline on a common fraud-conspiracy charge. |
+| **Appendix A — 26 U.S.C. § 7206** | Encoded as one entry mapping to § 2T1.1. The index splits it: (1), (3), (4), (5) map to § 2T1.1, while **(2) maps to § 2T1.4**. | Aiding or assisting a false return took the wrong guideline. |
+| **Appendix A — 18 U.S.C. § 371** | Encoded as § 2X1.1 only. The index gives conditional mappings — § 2C1.1 for conspiracy to defraud by interference with governmental functions, § 2K2.1 for conspiracy to violate § 924(c), and § 2A1.5. | The conditional routes were unavailable. |
 | **§ 5D1.2(a)** | Encoded as a **range** with a guideline floor — 2 years for Class A/B, 1 year for Class C/D. The current guideline supplies a **maximum only**, with the length set by an individualized assessment and bounded below only by any statutory minimum. | Every calculation reported a supervised-release floor the guideline no longer imposes. |
 | **§ 3A1.2** | Only two of the three routes were encoded. (b) — official victim where the applicable Chapter Two guideline is from Part A — was missing, and (a) was mis-cited as "(a)–(b)". | A +6 route was unavailable. |
 | **§ 3A1.5** | **Not encoded at all**, despite being cross-referenced by § 4C1.1(a)(9). Now added: +2 under (a), +4 under (b), with a level-37 floor where death resulted. | A whole adjustment was missing, and the zero-point checklist referenced a guideline the app did not have. |
@@ -68,17 +78,23 @@ regression fails the suite rather than reaching a worksheet.
 ### Still unverified
 
 - § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their subsection numbering
-- Appendix A statute-to-guideline mappings, and the statutory penalties in
-  `data/statutes.ts` — including the § 841(b) tiers, the § 851 enhancements and
-  the § 924(c) terms
+- **18 U.S.C. § 513** — the Appendix A pairing could not be resolved. The index is
+  laid out in two columns that interleave when flattened, and this entry sits where
+  the columns cannot be told apart. It may map to § 2B1.1 rather than § 2B5.1. The
+  entry carries a note saying so.
+- Statutory maxima for the non-drug, non-firearm statutes in `data/statutes.ts`
 - § 5B1.1 probation eligibility and the § 5C1.1 zone rules quoted in the results
-- § 5C1.2 safety-valve criteria text
-- § 1B1.3 relevant conduct, § 2X1.1, § 3D1.2's grouping tests
+- § 1B1.3 relevant conduct, § 2X1.1, and § 3D1.2's grouping tests
+- § 929(a) and § 844(h), which § 2K2.4 also covers and which are not encoded
 
-Every table the calculation depends on has been checked, and so has all of
-Chapter 3, § 5G1.1, § 5G1.2 and § 5D1.2. What remains is four Chapter 2
-guidelines outside the priority docket, the statutory penalty data, and the
-Chapter 5 text quoted in the output.
+### A note on method
+
+The Appendix A check found three real errors and one it could not resolve. It also
+*falsely* flagged 18 U.S.C. § 1621, where my parser paired the statute with a
+neighbouring column's guideline; reading the raw layout showed § 2J1.3 was right
+all along. Where a mechanical diff and the page disagree, the page wins — and an
+entry that cannot be read confidently is left flagged rather than "corrected"
+into a new error.
 
 ## How confidence is marked
 
