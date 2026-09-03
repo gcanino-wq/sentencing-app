@@ -68,29 +68,31 @@ export function resolveLoss(input: LossInput | undefined): {
 }
 
 /**
- * Tax Loss Table — § 2T4.1. Each row is the inclusive floor.
- * VERIFY against § 2T4.1.
+ * Tax Table — § 2T4.1. Verified against the 2025 Manual on 2026-09-03.
+ * Thresholds are exclusive: "$2,500 or less" is level 6, "more than $2,500" is 8.
  */
-export const TAX_LOSS_TABLE: readonly { atLeast: number; level: number }[] = [
-  { atLeast: 150_000_000, level: 32 },
-  { atLeast: 65_000_000, level: 30 },
-  { atLeast: 25_000_000, level: 28 },
-  { atLeast: 9_500_000, level: 26 },
-  { atLeast: 3_500_000, level: 24 },
-  { atLeast: 1_500_000, level: 22 },
-  { atLeast: 550_000, level: 20 },
-  { atLeast: 250_000, level: 18 },
-  { atLeast: 100_000, level: 16 },
-  { atLeast: 40_000, level: 14 },
-  { atLeast: 15_000, level: 12 },
-  { atLeast: 6_500, level: 10 },
-  { atLeast: 2_500, level: 8 },
-  { atLeast: 0, level: 6 },
+export const TAX_LOSS_TABLE: readonly { moreThan: number; level: number }[] = [
+  { moreThan: 550_000_000, level: 36 },
+  { moreThan: 250_000_000, level: 34 },
+  { moreThan: 150_000_000, level: 32 },
+  { moreThan: 65_000_000, level: 30 },
+  { moreThan: 25_000_000, level: 28 },
+  { moreThan: 9_500_000, level: 26 },
+  { moreThan: 3_500_000, level: 24 },
+  { moreThan: 1_500_000, level: 22 },
+  { moreThan: 550_000, level: 20 },
+  { moreThan: 250_000, level: 18 },
+  { moreThan: 100_000, level: 16 },
+  { moreThan: 40_000, level: 14 },
+  { moreThan: 15_000, level: 12 },
+  { moreThan: 6_500, level: 10 },
+  { moreThan: 2_500, level: 8 },
+  { moreThan: -1, level: 6 },
 ];
 
 export function taxLossLevel(amount: number): number {
   for (const row of TAX_LOSS_TABLE) {
-    if (amount >= row.atLeast) return row.level;
+    if (amount > row.moreThan) return row.level;
   }
   return 6;
 }

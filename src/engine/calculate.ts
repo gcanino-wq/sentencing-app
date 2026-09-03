@@ -86,6 +86,7 @@ export function calculate(input: CaseInput): CaseResult {
       mitigatingRole: Boolean(
         count.chapter3.mitigatingRole && count.chapter3.mitigatingRole !== 'none',
       ),
+      mitigatingRoleMinimal: count.chapter3.mitigatingRole === 'minimal',
     };
     const chapter2 = computeCount(count, ctx);
 
@@ -147,6 +148,7 @@ export function calculate(input: CaseInput): CaseResult {
       hasConsecutiveWeaponCount: hasWeaponConsecutiveCount,
       safetyValveSatisfied: svSatisfied,
       mitigatingRole: Boolean(driver.chapter3.mitigatingRole && driver.chapter3.mitigatingRole !== 'none'),
+      mitigatingRoleMinimal: driver.chapter3.mitigatingRole === 'minimal',
     });
     const chapter3 = applyChapter3(chapter2.adjustedOffenseLevel, driver.chapter3);
     aggregatedLevels.set(group.id, chapter3.level);

@@ -24,6 +24,14 @@ data. This section records what was compared, what matched, and what was wrong.
 | § 4C1.1 — eleven criteria | Read directly. Confirms the correction below. |
 | § 2B3.1(a) base level, (b)(1), (b)(2)(A)–(F), (b)(3)(A)–(C), (b)(4), (b)(5), (b)(6) | Read directly. |
 | § 2K2.1(a)(1)–(a)(8) base levels and (b)(1) firearm-count table | Read directly. |
+| **§ 2D1.1(c) Drug Quantity Table** | All 17 converted-drug-weight thresholds diffed. 17/17 match. |
+| **Drug Conversion Table ratios** | Derived independently from the level-38 row, where every listed quantity must equal 90,000 kg converted. Heroin, cocaine, cocaine base, methamphetamine (mixture and actual), "Ice", amphetamine (both), LSD, marihuana, hashish, hashish oil, PCP (both), fentanyl and fentanyl analogue all match. |
+| **§ 2B1.1(b)(1) loss table** | All 15 brackets diffed. 15/15 match, including the exclusive "more than" boundaries. |
+| **§ 4B1.1(b) career offender table** | All 7 rows match. The footnote also confirms § 3E1.1 applies to the career offender level, which is the order the engine uses. |
+| **§ 3D1.4 unit table and counting rules** | Table matches, as do the rules the grouping code implements: one unit for the highest group and each within 4 levels, half a unit for 5–8 levels below, disregard 9 or more. |
+| **§ 5E1.2(c)(3) fine table** | 15 of 16 rows diffed and matching; the last row did not parse but follows the same pattern. |
+| **§ 2D1.1(b)(12) premises, (b)(18) safety valve** | Subsection numbering confirmed correct as encoded. |
+
 | § 922(g) statutory maximum of 15 years | 18 U.S.C. § 924(a)(8), via secondary sources. |
 | Methamphetamine actual/mixture and cocaine base conversion ratios | Secondary sources, including a court document putting 90 g of methamphetamine (actual) at ~1,818 kg converted. |
 
@@ -39,6 +47,12 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 2K2.1(b)(5)** | **Machinegun conversion devices** were missing — +2 for four or more or any transfer, +4 for 30 or more. | A switch case could not be scored. |
 | **§ 2K2.1(b)(5) cap** | The **level-29 cap** on the cumulative result of (b)(1)–(b)(5) was not implemented, nor the exception where (b)(3)(A) applies. | Over-calculation in large-quantity firearm cases. |
 | **§ 2K2.1(a)(8), (b)(3), (b)(6)(A)–(C), (b)(7)(A), (b)(9), (b)(10)** | All missing. | Destructive devices, trafficking tiers, transport out of the country, the group-of-five increase and the coercion reduction could not be applied. |
+| **§ 2D1.1(a)(1)–(a)(4)** | Encoded as death / serious bodily injury bases. They are keyed to the **statutory term** the offense carries — mandatory life, 20-years-to-life, or a 30- or 15-year maximum under § 841(b)(1)(E) / § 960(b)(5). | Wrong labels on the four highest base levels. |
+| **§ 2D1.1(a)(5)** | Encoded as a flat cap at level 32 for a mitigating role. The rule is **graduated**: level 32 decreases by 2, level 34 by 3, above 34 down to 32, and a minimal participant lands at 30. | At level 34 the old code gave 32 where the manual gives 31 — wrong in the government's favour. The minimal-participant sentence was absent entirely. |
+| **§ 2D1.1(b)(3)** | Missing its floor of level 26. | Under-calculation on aircraft and vessel cases. |
+| **§ 2D1.1 characteristics** | (b)(4) prison distribution, (b)(5) methamphetamine importation, (b)(7) mass-marketing, (b)(11) bribing an officer, (b)(13) fentanyl misrepresentation, (b)(14)(A)–(D) with their floors, (b)(15), (b)(16) and (b)(17) were **all missing**. A non-existent "bodily injury" characteristic was encoded at (b)(13), which is actually fentanyl misrepresentation. | Most § 2D1.1 enhancements could not be applied, and one cited a subsection that says something else. |
+| **§ 2T4.1 tax table** | Missing the top two brackets (+34 above $250M, +36 above $550M), and the thresholds were treated as **inclusive** where the manual says "more than". | Wrong level at every bracket edge, and no result above level 32. |
+
 | **§ 4C1.1** | Encoded as **ten** criteria with the aggravating-role and continuing-criminal-enterprise conditions combined. The manual has **eleven**. Criteria (7) and (9) were also narrower than the text. | Outcome was already right; the citation and count were wrong. |
 
 Each correction is covered by a test asserting the manual's numbers, so a
@@ -46,24 +60,20 @@ regression fails the suite rather than reaching a worksheet.
 
 ### Still unverified
 
-The pass above covered the Sentencing Table, Chapter 4's scoring rules, and the
-two Chapter 2 guidelines flagged as highest-risk. **Not yet checked against the
-manual:**
-
-- § 2B1.1(b)(1) loss table brackets, § 2T4.1, § 5E1.2 fine table, § 3D1.4 units,
-  § 4B1.1(b) career offender table, § 5D1.2 supervised release
-- The § 2D1.1(c) Drug Quantity Table and the full Drug Conversion Tables
-- § 2D1.1(a)(5) mitigating-role cap, which the 2025 amendments also touched
+- § 5D1.2 supervised release ranges
 - § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their numbering
-- Chapter 3 adjustment values, and § 5G1.1 / § 5G1.2 text
-- Appendix A statute-to-guideline mappings
-- § 3A1.5 (Serious Human Rights Offense), which § 4C1.1(a)(9) references and
-  which this build does not encode at all
+- Chapter 3 adjustment values (§§ 3A1.1–3A1.4, 3B1.1–3B1.3, 3C1.1, 3E1.1)
+- § 5G1.1 and § 5G1.2 text
+- Appendix A statute-to-guideline mappings, and the statutory penalties in
+  `data/statutes.ts`
+- § 3A1.5 (Serious Human Rights Offense), referenced by § 4C1.1(a)(9) and not
+  encoded at all
 
-The lesson from what was found: the errors clustered exactly where predicted —
-in the guidelines the November 2025 amendments restructured. The remaining
-unverified items in that same category, particularly § 2D1.1(a)(5), should be
-treated as suspect until checked.
+Every core table the calculation depends on — the Sentencing Table, the Drug
+Quantity Table, the drug conversion ratios, the § 2B1.1 loss table, the tax
+table, the fine table, the unit table and the career offender table — has now
+been checked against the manual. What remains is guideline *text*: the Chapter 3
+values and the Chapter 2 guidelines outside the four already done.
 
 ## How confidence is marked
 

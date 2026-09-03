@@ -640,3 +640,57 @@ describe('§ 2K2.1 as verified against the manual', () => {
     expect(result.counts[0]!.adjustedOffenseLevel).toBe(43);
   });
 });
+
+describe('§ 2D1.1(a)(5) mitigating role, as verified against the manual', () => {
+  // 3 kg cocaine = 600 kg converted = level 30; 12 kg = 2,400 kg = level 30.
+  // These quantities are chosen to land the Drug Quantity Table on 32, 34 and 36.
+  const drugCase = (kg: number, role: 'none' | 'minor' | 'minimal') =>
+    makeCase({
+      counts: [
+        makeCount({
+          id: 'c1',
+          statuteId: '21:841(b)(1)(A)',
+          drugs: [{ substanceId: 'heroin', quantity: kg, unit: 'kg' }],
+          chapter3: { mitigatingRole: role },
+        }),
+      ],
+    });
+
+  it('leaves the level alone with no mitigating role', () => {
+    // 5,000 kg converted -> level 32.
+    expect(calculate(drugCase(5, 'none')).combinedOffenseLevel).toBe(32);
+    // 15,000 kg -> level 34.
+    expect(calculate(drugCase(15, 'none')).combinedOffenseLevel).toBe(34);
+    // 50,000 kg -> level 36.
+    expect(calculate(drugCase(50, 'none')).combinedOffenseLevel).toBe(36);
+  });
+
+  it('drops level 32 by two', () => {
+    // 32 -> 30 under (a)(5), then -2 for the minor role adjustment itself.
+    const result = calculate(drugCase(5, 'minor'));
+    expect(result.counts[0]!.steps.some((s) => s.citation === '§ 2D1.1(a)(5)')).toBe(true);
+    expect(result.combinedOffenseLevel).toBe(28);
+  });
+
+  it('drops level 34 by three, not to 32', () => {
+    // The old flat cap produced 32 here; the manual gives 31, then -2 for the role.
+    expect(calculate(drugCase(15, 'minor')).combinedOffenseLevel).toBe(29);
+  });
+
+  it('drops anything above 34 to level 32', () => {
+    expect(calculate(drugCase(50, 'minor')).combinedOffenseLevel).toBe(30);
+  });
+
+  it('lands a minimal participant at 30 before the role reduction', () => {
+    // Above 34 -> 32, then the second sentence of (a)(5) takes it to 30,
+    // then § 3B1.2(a) takes its own 4 levels.
+    expect(calculate(drugCase(50, 'minimal')).combinedOffenseLevel).toBe(26);
+  });
+
+  it('does nothing below level 32', () => {
+    // 600 kg converted -> level 26; (a)(5) does not reach it.
+    const result = calculate(drugCase(0.6, 'minor'));
+    expect(result.counts[0]!.steps.some((s) => s.citation === '§ 2D1.1(a)(5)')).toBe(false);
+    expect(result.combinedOffenseLevel).toBe(24);
+  });
+});

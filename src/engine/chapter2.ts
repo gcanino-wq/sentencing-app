@@ -13,6 +13,8 @@ export interface Chapter2Context {
   safetyValveSatisfied: boolean;
   /** True when the defendant receives a § 3B1.2 mitigating role adjustment on this count. */
   mitigatingRole: boolean;
+  /** True specifically for the § 3B1.2(a) minimal-participant 4-level reduction. */
+  mitigatingRoleMinimal: boolean;
 }
 
 /** Resolve which guideline a count is calculated under. */
@@ -176,14 +178,42 @@ export function computeCount(count: CountInput, ctx: Chapter2Context): CountResu
         citation: '§ 2D1.1(c)(17)',
       });
     }
-    if (ctx.mitigatingRole && level > 32) {
-      steps.push({
-        kind: 'cap',
-        label: 'Base offense level capped at 32 — mitigating role adjustment applies',
-        citation: '§ 2D1.1(a)(5)',
-        levels: 32 - level,
-      });
-      level = 32;
+    if (ctx.mitigatingRole) {
+      // § 2D1.1(a)(5): level 32 drops 2, level 34 drops 3, anything above 34
+      // drops to 32. Below 32 the subsection does nothing.
+      let reduced = level;
+      let rationale = '';
+      if (level === 32) {
+        reduced = 30;
+        rationale = 'Level 32 with a mitigating role decreases by 2.';
+      } else if (level === 34) {
+        reduced = 31;
+        rationale = 'Level 34 with a mitigating role decreases by 3.';
+      } else if (level > 34) {
+        reduced = 32;
+        rationale = 'Above level 34 with a mitigating role decreases to level 32.';
+      }
+      if (reduced !== level) {
+        steps.push({
+          kind: 'cap',
+          label: 'Mitigating role reduction to the base offense level',
+          citation: '§ 2D1.1(a)(5)',
+          levels: reduced - level,
+          detail: rationale,
+        });
+        level = reduced;
+      }
+      // The second sentence of (a)(5): a minimal participant lands at 30.
+      if (level > 30 && ctx.mitigatingRoleMinimal) {
+        steps.push({
+          kind: 'cap',
+          label: 'Minimal participant — base offense level decreased to 30',
+          citation: '§ 2D1.1(a)(5)',
+          levels: 30 - level,
+          detail: 'The result exceeded level 30 and the defendant receives the § 3B1.2(a) 4-level reduction.',
+        });
+        level = 30;
+      }
     }
   } else if (guideline.quantityDriver === 'tax') {
     const taxLoss = count.loss?.actualLoss ?? 0;

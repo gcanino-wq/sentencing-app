@@ -169,12 +169,19 @@ describe('loss resolution', () => {
 });
 
 describe('§ 2T4.1 tax table', () => {
-  it('reads at the bracket edges', () => {
+  it('treats the thresholds as exclusive, per "more than"', () => {
     expect(taxLossLevel(0)).toBe(6);
-    expect(taxLossLevel(2_500)).toBe(8);
-    expect(taxLossLevel(2_499)).toBe(6);
-    expect(taxLossLevel(100_000)).toBe(16);
+    // $2,500 exactly is "$2,500 or less" and draws level 6, not 8.
+    expect(taxLossLevel(2_500)).toBe(6);
+    expect(taxLossLevel(2_501)).toBe(8);
+    expect(taxLossLevel(100_000)).toBe(14);
+    expect(taxLossLevel(100_001)).toBe(16);
+  });
+
+  it('carries the top two brackets', () => {
     expect(taxLossLevel(200_000_000)).toBe(32);
+    expect(taxLossLevel(300_000_000)).toBe(34);
+    expect(taxLossLevel(600_000_000)).toBe(36);
   });
 });
 
