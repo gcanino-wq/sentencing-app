@@ -95,7 +95,7 @@ export function wizardSteps(facts: CaseFacts): WizardStep[] {
       kind: 'choice',
       cite: '§2B1.1(b)(2)',
       label: 'Victims and financial hardship',
-      help: 'Twelve victims triggers the 10-or-more prong. Substantial hardship findings escalate it further, so enter the highest that the record supports.',
+      help: 'Twelve victims triggers the 10-or-more prong. Mass-marketing reaches the same 2 levels under (b)(2)(A)(ii). Substantial hardship findings escalate it further, so enter the highest that the record supports.',
       multi: false,
       options: [
         one('none', facts.hardship, { hardship: 'none' }, 'No victim-count or hardship finding', '+0'),
@@ -106,13 +106,13 @@ export function wizardSteps(facts: CaseFacts): WizardStep[] {
     },
     {
       kind: 'choice',
-      cite: '§2B1.1(b)(10) · (b)(3)',
+      cite: '§2B1.1(b)(2) · (b)(9) · (b)(10)',
       label: 'Which of these does the conduct support?',
-      help: 'Judgment calls — pick any that apply. Each adds 2 levels.',
+      help: 'Judgment calls — pick any that apply. Sophisticated means and charitable misrepresentation add 2 levels each. Mass-marketing is one of the three alternatives under (b)(2)(A), so it adds 2 only when the victim and hardship findings have not already triggered that subsection.',
       multi: true,
       options: [
         many('soph', 'Sophisticated means', '§2B1.1(b)(10)(C) · +2'),
-        many('mass', 'Mass-marketing', '§2B1.1(b)(2)(A)(ii) · +2'),
+        many('mass', 'Mass-marketing', '§2B1.1(b)(2)(A)(ii) · scored on line 2(c)'),
         many('charity', 'Misrepresented charitable or government affiliation', '§2B1.1(b)(9)(A) · +2'),
       ],
     },
