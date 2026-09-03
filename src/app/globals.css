@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: 23 27 33;
+  --muted: 94 102 115;
+  --faint: 142 150 162;
+  --surface: 250 250 249;
+  --raised: 255 255 255;
+  --line: 219 222 227;
+  --accent: 22 78 141;
+  --warn: 156 34 34;
+  --caution: 138 92 12;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: 232 235 239;
+    --muted: 154 162 174;
+    --faint: 112 120 133;
+    --surface: 16 18 21;
+    --raised: 25 28 33;
+    --line: 48 53 61;
+    --accent: 122 173 232;
+    --warn: 240 138 138;
+    --caution: 226 176 88;
+    color-scheme: dark;
+  }
+}
+
+html,
+body {
+  background: rgb(var(--surface));
+  color: rgb(var(--ink));
+}
+
+body {
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus is always visible — the form is long and keyboard navigation matters. */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+}
+
+@media print {
+  :root {
+    --ink: 0 0 0;
+    --muted: 60 60 60;
+    --faint: 90 90 90;
+    --surface: 255 255 255;
+    --raised: 255 255 255;
+    --line: 170 170 170;
+    --accent: 0 0 0;
+    --warn: 0 0 0;
+    --caution: 0 0 0;
+    color-scheme: light;
+  }
+
+  @page {
+    size: letter;
+    margin: 1in;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    font-size: 10.5pt;
+  }
+
+  .print-block {
+    break-inside: avoid;
+  }
+}
+
+.print-only {
+  display: none;
+}
