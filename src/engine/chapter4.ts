@@ -25,7 +25,8 @@ export const ZERO_POINT_CRITERIA: { id: ZeroPointCriterion; label: string; citat
   { id: 'noFirearmInConnection', label: 'Did not possess a firearm or dangerous weapon in connection with the offense', citation: '§ 4C1.1(a)(7)' },
   { id: 'notCivilRightsOffense', label: 'The instant offense is not covered by § 2H1.1', citation: '§ 4C1.1(a)(8)' },
   { id: 'noHateCrimeOrVulnerableVictim', label: 'Did not receive a § 3A1.1 hate crime or vulnerable victim adjustment', citation: '§ 4C1.1(a)(9)' },
-  { id: 'noAggravatingRoleOrCCE', label: 'Did not receive a § 3B1.1 aggravating role adjustment and was not engaged in a continuing criminal enterprise', citation: '§ 4C1.1(a)(10)' },
+  { id: 'noAggravatingRole', label: 'Did not receive a § 3B1.1 aggravating role adjustment', citation: '§ 4C1.1(a)(10)' },
+  { id: 'notEngagedInCCE', label: 'Was not engaged in a continuing criminal enterprise, as defined in 21 U.S.C. § 848', citation: '§ 4C1.1(a)(11)' },
 ];
 
 function yearsBetween(fromIso: string | undefined, toIso: string | undefined): number | null {

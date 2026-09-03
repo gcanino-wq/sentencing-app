@@ -229,7 +229,8 @@ export type ZeroPointCriterion =
   | 'noFirearmInConnection'
   | 'notCivilRightsOffense'
   | 'noHateCrimeOrVulnerableVictim'
-  | 'noAggravatingRoleOrCCE';
+  | 'noAggravatingRole'
+  | 'notEngagedInCCE';
 
 // ---------------------------------------------------------------------------
 // Chapter 3D grouping

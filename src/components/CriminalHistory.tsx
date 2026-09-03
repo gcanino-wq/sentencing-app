@@ -285,7 +285,7 @@ export function CriminalHistoryEditor({
             Zero-point offender <Cite section="§ 4C1.1" />
           </SubHead>
           <p className="text-2xs text-faint leading-snug">
-            All ten criteria must be satisfied. Confirm each.
+            All eleven criteria must be satisfied. Confirm each.
           </p>
           {ZERO_POINT_CRITERIA.map((criterion) => (
             <Check

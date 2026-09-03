@@ -10,6 +10,57 @@ the encoding date (2026-09-03) are not reflected.
 Every item below is a table or rule the calculation depends on. Each lives in an
 isolated module, so a correction is a one-line edit — no logic changes.
 
+## Partial verification pass, 2026-09-03
+
+The published manual could not be reached from the build environment (ussc.gov is
+blocked by the network egress policy — confirmed via HTTP client, curl, and a real
+browser). What follows was checked against secondary sources via web search. Search
+is good enough to settle a discrete rule or a single number; it is **not** good
+enough to verify a 258-cell table or the text of a guideline, so most of the
+checklist below is untouched.
+
+### Confirmed
+
+| Item | Result |
+| --- | --- |
+| § 4A1.1(e) status point | Correct. One point, and only where the defendant already has 7 or more points under (a)–(d), per Amendment 821. |
+| § 922(g) statutory maximum | Correct at 15 years under 18 U.S.C. § 924(a)(8), raised from 10 by the Bipartisan Safer Communities Act (June 2022). The offense-date caveat in the data is warranted. |
+| Methamphetamine conversion ratios | Correct. A court document puts 90 g of methamphetamine (actual) at 1,818 kg converted — approximately 20 kg per gram, ten times the mixture ratio. |
+| Cocaine base ratio | Correct at 3,571 g converted per gram (Amendment 748). |
+| § 2B1.1(b)(1) loss table shape | Correct: 16 tiers running 0 to 30 levels. **Individual bracket amounts remain unverified.** |
+| Sentencing Table, level 26 / Category I | 63–78 months, matching the encoded cell. One cell of 258. |
+
+### Corrected
+
+| Item | Defect |
+| --- | --- |
+| § 4C1.1 criteria | Encoded as **ten** criteria with the aggravating-role and continuing-criminal-enterprise conditions combined in (a)(10). The 2024 amendment split them into (a)(10) and (a)(11), so there are **eleven**. The outcome was already correct — both conditions were required — but the citation and the count were wrong. Fixed. |
+
+### Open risk: the 2025 amendment cycle
+
+This is the most serious gap and it is not resolved.
+
+The amendments effective **November 1, 2025** — the edition this build claims to
+encode — included a "simplification" package that reportedly touched:
+
+- the § 1B1.1 three-step application process and the use of **departures**
+- **mitigating-role adjustments in drug cases** (§ 2D1.1(a)(5))
+- **specific offense characteristics in robbery and extortion** (§ 2B3.1)
+- **firearm enhancements** (§ 2K2.1)
+- **criminal history calculations** (Chapter 4)
+- **supervised release** (§ 5D1.2)
+
+Four of those are encoded here, and two — § 2B3.1 and § 2K2.1 — are priority
+docket guidelines. The encoding was done from knowledge of the guidelines'
+structure and may reflect the **pre-amendment** form in these areas. Nothing in
+this build should be relied on for a robbery, carjacking, firearm, or
+mitigating-role drug calculation until § 2B3.1, § 2K2.1, § 2D1.1(a)(5), and
+Chapter 4 are read against the 2025 manual directly.
+
+Resolving this needs the manual itself. Search summaries are too coarse to
+reconstruct amended guideline text, and reconstructing it from memory is exactly
+the failure mode this document exists to guard against.
+
 ## How confidence is marked
 
 | Marking | Meaning |
@@ -83,8 +134,11 @@ been checked.
       which the app does **not** model — it relies on your grouping of priors.
 - [ ] **§ 4B1.4 ACCA**: offense level floor of 33 (34 with the in-connection
       finding) and Criminal History Category floor of IV (VI in that case).
-- [ ] **§ 4C1.1 criteria**, all ten. Criterion (a)(10) regarding an aggravating
-      role adjustment was amended after Amendment 821 — **confirm its current text.**
+- [x] **§ 4C1.1 criteria — corrected.** Originally encoded as ten criteria with
+      the aggravating-role and continuing-criminal-enterprise conditions combined.
+      The 2024 amendment split them into separate subsections (a)(10) and (a)(11),
+      so the manual has **eleven**. Corrected 2026-09-03. The outcome was already
+      right (both conditions were required); the citation and count were not.
 
 ## Chapter 5 and statutes — `src/engine/chapter5.ts`, `data/statutes.ts`
 
