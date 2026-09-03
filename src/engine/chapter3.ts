@@ -40,16 +40,54 @@ export function applyChapter3(
   };
 
   // --- Part A: victim-related adjustments ----------------------------------
-  if (sel.hateCrime) add('Hate crime motivation', '§ 3A1.1(a)', 3);
+  if (sel.hateCrime) {
+    add('Hate crime motivation', '§ 3A1.1(a)', 3);
+    flags.push({
+      severity: 'info',
+      code: 'hate-crime-2h11',
+      message:
+        'The § 3A1.1(a) adjustment does not apply where an adjustment under § 2H1.1(b)(1) applies.',
+      citation: '§ 3A1.1, special instruction',
+    });
+  }
 
   if (sel.vulnerableVictim) {
     add('Vulnerable victim', '§ 3A1.1(b)(1)', 2);
     if (sel.vulnerableVictimMany) add('Large number of vulnerable victims', '§ 3A1.1(b)(2)', 2);
   }
 
-  if (sel.officialVictim === 'standard') add('Official victim', '§ 3A1.2(a)–(b)', 3);
-  else if (sel.officialVictim === 'assaultive')
-    add('Official victim — assaultive conduct toward a law enforcement officer', '§ 3A1.2(c)', 6);
+  // § 3A1.2 says "apply the greatest"; the three routes are mutually exclusive.
+  if (sel.officialVictim === 'standard') {
+    add('Official victim', '§ 3A1.2(a)', 3);
+  } else if (sel.officialVictim === 'chapterTwoPartA') {
+    add(
+      'Official victim, where the applicable Chapter Two guideline is from Part A',
+      '§ 3A1.2(b)',
+      6,
+    );
+  } else if (sel.officialVictim === 'assaultive') {
+    add(
+      'Assaulted a law enforcement officer or prison official, creating a substantial risk of serious bodily injury',
+      '§ 3A1.2(c)',
+      6,
+    );
+  }
+
+  // § 3A1.5 serious human rights offense.
+  if (sel.humanRights === 'genocide1091c') {
+    add('Convicted of an offense under 18 U.S.C. § 1091(c)', '§ 3A1.5(a)', 2);
+  } else if (sel.humanRights === 'other') {
+    add('Convicted of a serious human rights offense', '§ 3A1.5(b)', 4);
+    if (sel.humanRightsDeathResulted && level < 37) {
+      steps.push({
+        kind: 'chapter3',
+        label: 'Offense level floored at 37 — death resulted',
+        citation: '§ 3A1.5(b)',
+        levels: 37 - level,
+      });
+      level = 37;
+    }
+  }
 
   if (sel.restraintOfVictim) add('Victim physically restrained', '§ 3A1.3', 2);
 

@@ -116,8 +116,12 @@ export interface Chapter3Selections {
   /** § 3A1.1(b)(1) vulnerable victim (+2), (b)(2) large number of vulnerable victims (+2 more). */
   vulnerableVictim?: boolean;
   vulnerableVictimMany?: boolean;
-  /** § 3A1.2 official victim (+3, or +6 under (c)). */
-  officialVictim?: 'none' | 'standard' | 'assaultive';
+  /** § 3A1.2 official victim: +3 under (a), +6 under (b) or (c). */
+  officialVictim?: 'none' | 'standard' | 'chapterTwoPartA' | 'assaultive';
+  /** § 3A1.5 serious human rights offense. */
+  humanRights?: 'none' | 'genocide1091c' | 'other';
+  /** § 3A1.5(b) — death resulted, flooring the offense level at 37. */
+  humanRightsDeathResulted?: boolean;
   /** § 3A1.3 restraint of victim (+2). */
   restraintOfVictim?: boolean;
   /** § 3A1.4 terrorism (+12, floor of level 32, forces CHC VI). */

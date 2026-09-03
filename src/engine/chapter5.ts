@@ -269,8 +269,8 @@ export function computeChapter5(
     citation: sr.citation,
     note:
       statutorySrMin > 0
-        ? `A statutory minimum term of ${statutorySrMin / 12} years applies and overrides the bottom of the § 5D1.2(a) range. § 5D1.2(c).`
-        : undefined,
+        ? `A statutory minimum term of ${statutorySrMin / 12} years applies. § 5D1.2(a) otherwise supplies only a maximum, with the length set by an individualized assessment.`
+        : 'The guideline supplies a maximum only; the court sets the length by individualized assessment. § 5D1.2(a).',
   };
 
   const zone = zoneForRange(range);

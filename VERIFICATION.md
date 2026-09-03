@@ -30,6 +30,10 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 4B1.1(b) career offender table** | All 7 rows match. The footnote also confirms § 3E1.1 applies to the career offender level, which is the order the engine uses. |
 | **§ 3D1.4 unit table and counting rules** | Table matches, as do the rules the grouping code implements: one unit for the highest group and each within 4 levels, half a unit for 5–8 levels below, disregard 9 or more. |
 | **§ 5E1.2(c)(3) fine table** | 15 of 16 rows diffed and matching; the last row did not parse but follows the same pattern. |
+| **Chapter 3 adjustment values** | § 3A1.1(a) +3 and (b)(1)/(b)(2) +2/+2, § 3A1.3 +2, § 3A1.4 +12 with the level-32 floor and Category VI, § 3B1.1 +4/+3/+2, § 3B1.2 −4/−2/−3, § 3B1.3 +2, § 3C1.1 +2, § 3E1.1 −2 and −1. All read directly. All match. |
+| **§ 3E1.1(b) threshold** | The level-16 test runs on the offense level *before* subsection (a) operates, which is what the engine does. |
+| **§ 5G1.1(a)–(c)** | Read directly. The clamping in both directions matches. |
+| **§ 5G1.2(a)–(d)** | Read directly. Consecutive-mandated counts are determined by statute independently, and other counts run consecutively only to the extent needed to reach the total punishment. |
 | **§ 2D1.1(b)(12) premises, (b)(18) safety valve** | Subsection numbering confirmed correct as encoded. |
 
 | § 922(g) statutory maximum of 15 years | 18 U.S.C. § 924(a)(8), via secondary sources. |
@@ -51,6 +55,9 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 2D1.1(a)(5)** | Encoded as a flat cap at level 32 for a mitigating role. The rule is **graduated**: level 32 decreases by 2, level 34 by 3, above 34 down to 32, and a minimal participant lands at 30. | At level 34 the old code gave 32 where the manual gives 31 — wrong in the government's favour. The minimal-participant sentence was absent entirely. |
 | **§ 2D1.1(b)(3)** | Missing its floor of level 26. | Under-calculation on aircraft and vessel cases. |
 | **§ 2D1.1 characteristics** | (b)(4) prison distribution, (b)(5) methamphetamine importation, (b)(7) mass-marketing, (b)(11) bribing an officer, (b)(13) fentanyl misrepresentation, (b)(14)(A)–(D) with their floors, (b)(15), (b)(16) and (b)(17) were **all missing**. A non-existent "bodily injury" characteristic was encoded at (b)(13), which is actually fentanyl misrepresentation. | Most § 2D1.1 enhancements could not be applied, and one cited a subsection that says something else. |
+| **§ 5D1.2(a)** | Encoded as a **range** with a guideline floor — 2 years for Class A/B, 1 year for Class C/D. The current guideline supplies a **maximum only**, with the length set by an individualized assessment and bounded below only by any statutory minimum. | Every calculation reported a supervised-release floor the guideline no longer imposes. |
+| **§ 3A1.2** | Only two of the three routes were encoded. (b) — official victim where the applicable Chapter Two guideline is from Part A — was missing, and (a) was mis-cited as "(a)–(b)". | A +6 route was unavailable. |
+| **§ 3A1.5** | **Not encoded at all**, despite being cross-referenced by § 4C1.1(a)(9). Now added: +2 under (a), +4 under (b), with a level-37 floor where death resulted. | A whole adjustment was missing, and the zero-point checklist referenced a guideline the app did not have. |
 | **§ 2T4.1 tax table** | Missing the top two brackets (+34 above $250M, +36 above $550M), and the thresholds were treated as **inclusive** where the manual says "more than". | Wrong level at every bracket edge, and no result above level 32. |
 
 | **§ 4C1.1** | Encoded as **ten** criteria with the aggravating-role and continuing-criminal-enterprise conditions combined. The manual has **eleven**. Criteria (7) and (9) were also narrower than the text. | Outcome was already right; the citation and count were wrong. |
@@ -60,20 +67,18 @@ regression fails the suite rather than reaching a worksheet.
 
 ### Still unverified
 
-- § 5D1.2 supervised release ranges
-- § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their numbering
-- Chapter 3 adjustment values (§§ 3A1.1–3A1.4, 3B1.1–3B1.3, 3C1.1, 3E1.1)
-- § 5G1.1 and § 5G1.2 text
+- § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their subsection numbering
 - Appendix A statute-to-guideline mappings, and the statutory penalties in
-  `data/statutes.ts`
-- § 3A1.5 (Serious Human Rights Offense), referenced by § 4C1.1(a)(9) and not
-  encoded at all
+  `data/statutes.ts` — including the § 841(b) tiers, the § 851 enhancements and
+  the § 924(c) terms
+- § 5B1.1 probation eligibility and the § 5C1.1 zone rules quoted in the results
+- § 5C1.2 safety-valve criteria text
+- § 1B1.3 relevant conduct, § 2X1.1, § 3D1.2's grouping tests
 
-Every core table the calculation depends on — the Sentencing Table, the Drug
-Quantity Table, the drug conversion ratios, the § 2B1.1 loss table, the tax
-table, the fine table, the unit table and the career offender table — has now
-been checked against the manual. What remains is guideline *text*: the Chapter 3
-values and the Chapter 2 guidelines outside the four already done.
+Every table the calculation depends on has been checked, and so has all of
+Chapter 3, § 5G1.1, § 5G1.2 and § 5D1.2. What remains is four Chapter 2
+guidelines outside the priority docket, the statutory penalty data, and the
+Chapter 5 text quoted in the output.
 
 ## How confidence is marked
 

@@ -169,8 +169,13 @@ export function offenseClass(statutoryMaxMonths: number | null): OffenseClass {
 }
 
 /**
- * Supervised release term — § 5D1.2(a). A statutory minimum (common in drug
- * cases under 21 U.S.C. § 841(b)) overrides the bottom of this range.
+ * Supervised release — § 5D1.2(a), verified against the 2025 Manual.
+ *
+ * The guideline supplies a **maximum** only. The court conducts an
+ * individualized assessment of the length, which may not fall below any
+ * statutorily required minimum term. Earlier editions gave a range with a
+ * guideline floor (2 years for Class A/B, 1 year for Class C/D); that floor is
+ * gone, so the minimum here is 0 unless a statute supplies one.
  */
 export function supervisedReleaseRange(cls: OffenseClass): {
   min: number;
@@ -180,10 +185,10 @@ export function supervisedReleaseRange(cls: OffenseClass): {
   switch (cls) {
     case 'A':
     case 'B':
-      return { min: 24, max: 60, citation: '§ 5D1.2(a)(1)' };
+      return { min: 0, max: 60, citation: '§ 5D1.2(a)(1)' };
     case 'C':
     case 'D':
-      return { min: 12, max: 36, citation: '§ 5D1.2(a)(2)' };
+      return { min: 0, max: 36, citation: '§ 5D1.2(a)(2)' };
     default:
       return { min: 0, max: 12, citation: '§ 5D1.2(a)(3)' };
   }

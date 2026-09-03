@@ -817,6 +817,28 @@ function Chapter3Panel({
             </Select>
           </Field>
 
+          <Field label="Serious human rights offense">
+            <Select
+              value={ch3.humanRights ?? 'none'}
+              onChange={(e) => set({ humanRights: e.target.value as typeof ch3.humanRights })}
+            >
+              <option value="none">Not applicable</option>
+              <option value="genocide1091c">Convicted under 18 U.S.C. § 1091(c) +2 (§ 3A1.5(a))</option>
+              <option value="other">Any other serious human rights offense +4 (§ 3A1.5(b))</option>
+            </Select>
+          </Field>
+          {ch3.humanRights === 'other' ? (
+            <div className="pl-5">
+              <Check
+                checked={Boolean(ch3.humanRightsDeathResulted)}
+                onChange={(v) => set({ humanRightsDeathResulted: v })}
+                label="Death resulted"
+                citation="§ 3A1.5(b)"
+                hint="Floors the offense level at 37."
+              />
+            </div>
+          ) : null}
+
           <Check
             checked={Boolean(ch3.inchoateReduction)}
             onChange={(v) => set({ inchoateReduction: v })}

@@ -694,3 +694,73 @@ describe('§ 2D1.1(a)(5) mitigating role, as verified against the manual', () =>
     expect(result.combinedOffenseLevel).toBe(24);
   });
 });
+
+describe('Chapter 3 as verified against the manual', () => {
+  const withCh3 = (chapter3: Record<string, unknown>) =>
+    calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:1343',
+            socs: [{ id: 'base:a1' }],
+            chapter3: chapter3 as never,
+          }),
+        ],
+      }),
+    );
+
+  it('applies the three § 3A1.2 routes at their own values', () => {
+    expect(withCh3({ officialVictim: 'standard' }).combinedOffenseLevel).toBe(7 + 3);
+    expect(withCh3({ officialVictim: 'chapterTwoPartA' }).combinedOffenseLevel).toBe(7 + 6);
+    expect(withCh3({ officialVictim: 'assaultive' }).combinedOffenseLevel).toBe(7 + 6);
+  });
+
+  it('applies § 3A1.5 and its level-37 floor on death', () => {
+    expect(withCh3({ humanRights: 'genocide1091c' }).combinedOffenseLevel).toBe(7 + 2);
+    expect(withCh3({ humanRights: 'other' }).combinedOffenseLevel).toBe(7 + 4);
+    expect(
+      withCh3({ humanRights: 'other', humanRightsDeathResulted: true }).combinedOffenseLevel,
+    ).toBe(37);
+  });
+
+  it('notes the § 2H1.1(b)(1) exception on hate crime motivation', () => {
+    expect(withCh3({ hateCrime: true }).flags.some((f) => f.code === 'hate-crime-2h11')).toBe(true);
+  });
+
+  it('stacks the vulnerable victim adjustments as the guideline does', () => {
+    expect(withCh3({ vulnerableVictim: true }).combinedOffenseLevel).toBe(7 + 2);
+    expect(
+      withCh3({ vulnerableVictim: true, vulnerableVictimMany: true }).combinedOffenseLevel,
+    ).toBe(7 + 4);
+  });
+});
+
+describe('§ 5D1.2 as verified against the manual', () => {
+  it('supplies a maximum only, with no guideline minimum', () => {
+    const result = calculate(
+      makeCase({
+        counts: [makeCount({ id: 'c1', statuteId: '18:1343', socs: [{ id: 'base:a1' }] })],
+      }),
+    );
+    // 18 U.S.C. § 1343 carries a 20-year maximum, a Class C felony.
+    expect(result.chapter5.supervisedRelease.max).toBe(36);
+    expect(result.chapter5.supervisedRelease.min).toBe(0);
+  });
+
+  it('still respects a statutory minimum term where one applies', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '21:841(b)(1)(A)',
+            drugs: [{ substanceId: 'cocaine', quantity: 10, unit: 'kg' }],
+          }),
+        ],
+      }),
+    );
+    // § 841(b)(1)(A) requires at least five years of supervised release.
+    expect(result.chapter5.supervisedRelease.min).toBe(60);
+  });
+});
