@@ -11,7 +11,7 @@ import { EDITION } from './data/edition';
 import { getGuideline } from './data/guidelines';
 import { cautionsFor, type JurisdictionCaution } from './data/districts';
 import { clampOffenseLevel, lookupRange } from './data/sentencing-table';
-import { computeCount, type Chapter2Context } from './chapter2';
+import { computeCount, guidelineForCount, type Chapter2Context } from './chapter2';
 import { applyAcceptance, applyChapter3 } from './chapter3';
 import { combinedOffenseLevel, computeGroupLevels, proposeGroups } from './grouping';
 import { computeCriminalHistory } from './chapter4';
@@ -272,7 +272,12 @@ export function calculate(input: CaseInput): CaseResult {
 
   // --- Jurisdiction cautions ------------------------------------------------
   const concerns: JurisdictionCaution['appliesWhen'][] = ['always'];
-  if (input.counts.some((c) => c.loss)) concerns.push('loss');
+  const usesSection2B11LossTable = input.counts.some((c) => {
+    if (!c.loss && c.benefitValue === undefined) return false;
+    const g = getGuideline(c.guidelineOverride ?? guidelineForCount(c).guideline.section);
+    return (g.quantityDriver === 'loss' || g.quantityDriver === 'benefit') && !g.ownLossTable;
+  });
+  if (usesSection2B11LossTable) concerns.push('loss');
   if (criminalHistory.careerOffenderApplies) concerns.push('careerOffender');
   if (criminalHistory.accaApplies) concerns.push('acca');
   if (input.departures?.some((d) => d.citation.includes('5K3.1'))) concerns.push('fastTrack');

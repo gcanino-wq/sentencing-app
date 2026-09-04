@@ -103,6 +103,38 @@ Every table, every Chapter 3 adjustment, all of Chapter 4's scoring rules,
 §§ 5B1.1, 5C1.1, 5C1.2, 5D1.2, 5E1.2, 5G1.1 and 5G1.2, and all ten encoded
 Chapter 2 guidelines have now been checked against the manual.
 
+### End-to-end validation, 2026-09-03
+
+A full three-count D.P.R.-shaped fact pattern was computed **by hand from the
+manual first**, then entered through the app's own interface and compared. The
+case was chosen to exercise the machinery that had just been repaired:
+
+- a § 846 / § 841(b)(1)(A) conspiracy with two substances (2 kg cocaine and
+  500 g cocaine base, converting to 2,185.5 kg) and a minor role, which puts the
+  Drug Quantity Table at level 30 — below the level-32 threshold, so § 2D1.1(a)(5)
+  correctly does nothing
+- a § 924(c) count, brandished, which must suppress the weapon enhancement on
+  *both* other counts
+- a § 2119 carjacking exercising § 2B3.1's own loss table and its injury tiers
+- consolidated priors testing the § 4A1.2(a)(2) single-sentence rule, and a status
+  point that must be withheld at 4 points
+
+The app reproduced the hand calculation exactly: total offense level 28, Criminal
+History Category III on 4 points, a grouped-counts range of 120–121 months after
+§ 5G1.1(c)(2) raised it to the mandatory minimum, 84 months consecutive, 204–205
+months total, Zone D, a $25,000–$250,000 fine, and probation barred as a Class A
+felony. Both § 2K2.4 suppressions fired and were reported.
+
+The run also surfaced two output defects the unit tests had not:
+
+| Defect | Fix |
+| --- | --- |
+| The § 2B1.1 intended-loss caution fired on the **carjacking** count. That commentary dispute belongs to § 2B1.1; under § 2B3.1 "loss" simply means the value of the property taken. | The caution now fires only for counts actually scored on the § 2B1.1 table. |
+| A guideline with exactly one base offense level, such as § 2B3.1, still warned "confirm which subsection applies." | A sole base level is applied without comment. |
+
+Both are covered by tests. The lesson: a warning that fires when it should not is
+its own kind of error — it trains the reader to skim past the ones that matter.
+
 ### A note on method
 
 The Appendix A check found three real errors and one it could not resolve. It also

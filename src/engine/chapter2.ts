@@ -248,6 +248,16 @@ export function computeCount(count: CountInput, ctx: Chapter2Context): CountResu
       citation: `§ ${guideline.section}(a)`,
       levels: level,
     });
+  } else if (guideline.baseOptions.length === 1) {
+    // Nothing to choose between — apply it without asking.
+    const only = guideline.baseOptions[0]!;
+    level = only.level;
+    steps.push({
+      kind: 'base',
+      label: only.label,
+      citation: only.citation,
+      levels: level,
+    });
   } else if (guideline.defaultBaseLevel !== undefined) {
     level = guideline.defaultBaseLevel;
     steps.push({

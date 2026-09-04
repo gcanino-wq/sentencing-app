@@ -897,3 +897,40 @@ describe('§ 5B1.1 probation bars, as verified against the manual', () => {
     expect(result.chapter5.probationNote).toContain('§ 5B1.1(a)(1)');
   });
 });
+
+describe('defects found by running a full case end to end', () => {
+  it('does not raise the § 2B1.1 intended-loss caution on a § 2B3.1 count', () => {
+    const result = calculate(
+      makeCase({
+        counts: [makeCount({ id: 'c1', statuteId: '18:2119', loss: { actualLoss: 30_000 } })],
+      }),
+    );
+    // § 2B3.1 has its own loss table, and "loss" there is the value of the property
+    // taken. The commentary dispute about intended loss belongs to § 2B1.1.
+    expect(result.flags.some((f) => f.code === 'loss-commentary-deference')).toBe(false);
+  });
+
+  it('still raises it on a § 2B1.1 count', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:1343',
+            socs: [{ id: 'base:a1' }],
+            loss: { actualLoss: 30_000 },
+          }),
+        ],
+      }),
+    );
+    expect(result.flags.some((f) => f.code === 'loss-commentary-deference')).toBe(true);
+  });
+
+  it('applies a sole base offense level without asking the user to choose', () => {
+    const result = calculate(
+      makeCase({ counts: [makeCount({ id: 'c1', statuteId: '18:2119' })] }),
+    );
+    expect(result.counts[0]!.adjustedOffenseLevel).toBe(20);
+    expect(result.flags.some((f) => f.code === 'default-base-level')).toBe(false);
+  });
+});
