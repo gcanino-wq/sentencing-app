@@ -35,6 +35,12 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 2K2.4** | Confirms the guideline sentence is the *minimum* term required by statute for § 924(c), and that Chapters 3(A)–(E) and 4 do not apply to that count — which is how the engine treats it. |
 | **18 U.S.C. § 924(c) terms** | 5 years base, 7 brandished, 10 discharged, 30 for a machinegun or silencer, 25 second-or-subsequent. All match. |
 | **21 U.S.C. § 841(b) tiers** | 10-years-to-life at (b)(1)(A), rising to 15 with one prior and 25 with two under the First Step Act; 5-to-40 at (b)(1)(B) rising to 10-to-life. All match. |
+| **§ 2C1.1(a), (b)(1)–(b)(3)** | Base levels 14/12, more-than-one-bribe +2, the § 2B1.1 table route above $6,500, and the elected-official +4 with its level-18 floor. All match. |
+| **§ 2S1.1(a), (b)(1), (b)(2)(A)/(B), (b)(3)** | Base level routes, the +6 knowledge increase, the § 1957 (+1) and § 1956 (+2) tiers, and sophisticated laundering. All match. |
+| **§ 2T1.1(a)** | Tax Table route, and level 6 where there is no tax loss. Matches. |
+| **§ 2L1.2(a)** | Base level 8. Matches. |
+| **§ 5C1.1(b)–(d) zone rules** | Zone A, B and C substitution rules read directly; the Zone C one-half requirement was already right. |
+| **§ 5B1.1(a)** | Probation authorized in Zone A, and in Zone B with a confinement condition. Matches. |
 | **Chapter 3 adjustment values** | § 3A1.1(a) +3 and (b)(1)/(b)(2) +2/+2, § 3A1.3 +2, § 3A1.4 +12 with the level-32 floor and Category VI, § 3B1.1 +4/+3/+2, § 3B1.2 −4/−2/−3, § 3B1.3 +2, § 3C1.1 +2, § 3E1.1 −2 and −1. All read directly. All match. |
 | **§ 3E1.1(b) threshold** | The level-16 test runs on the offense level *before* subsection (a) operates, which is what the engine does. |
 | **§ 5G1.1(a)–(c)** | Read directly. The clamping in both directions matches. |
@@ -60,6 +66,12 @@ data. This section records what was compared, what matched, and what was wrong.
 | **§ 2D1.1(a)(5)** | Encoded as a flat cap at level 32 for a mitigating role. The rule is **graduated**: level 32 decreases by 2, level 34 by 3, above 34 down to 32, and a minimal participant lands at 30. | At level 34 the old code gave 32 where the manual gives 31 — wrong in the government's favour. The minimal-participant sentence was absent entirely. |
 | **§ 2D1.1(b)(3)** | Missing its floor of level 26. | Under-calculation on aircraft and vessel cases. |
 | **§ 2D1.1 characteristics** | (b)(4) prison distribution, (b)(5) methamphetamine importation, (b)(7) mass-marketing, (b)(11) bribing an officer, (b)(13) fentanyl misrepresentation, (b)(14)(A)–(D) with their floors, (b)(15), (b)(16) and (b)(17) were **all missing**. A non-existent "bodily injury" characteristic was encoded at (b)(13), which is actually fentanyl misrepresentation. | Most § 2D1.1 enhancements could not be applied, and one cited a subsection that says something else. |
+| **§ 5B1.1(b)(1)** | The **Class A or B felony bar** on probation was not implemented — the app looked only at the zone and any mandatory minimum. | A Class A or B felony landing in Zone A or B was shown as probation-eligible when 18 U.S.C. § 3561(a)(1) forbids it. |
+| **§ 2L1.2(b)(2), (b)(3)** | Only two of the five tiers in each set were encoded. The manual has +10, +8, +6, +4 and +2 both before and after the first removal order, and (b)(1) has a second tier for § 1325(a) misdemeanors. | Most illegal-reentry cases could not be scored correctly. |
+| **§ 2C1.1(b)(4)** | Missing — a public official facilitating entry, a passport, a naturalization document, or a government ID. | A +2 enhancement was unavailable. |
+| **§ 2S1.1(b)(2)(C)** | Missing — in the business of laundering funds, +4. | The largest of the three (b)(2) tiers was unavailable. |
+| **§ 2T1.1(b)(1)** | Missing its level-12 floor. | Under-calculation on small-tax-loss cases with unreported criminal income. |
+| **18 U.S.C. § 929(a), § 844(h)** | Not encoded, though § 2K2.4 covers both. | Two mandatory-consecutive statutes could not be entered. |
 | **21 U.S.C. § 841(b)(1)(A), one § 851 prior** | Supervised release minimum encoded as **8 years**. The statute requires at least **10**; the 4-to-8 step belongs to § 841(b)(1)(B). | Understated the supervised release floor in exactly the § 851 cases where it matters most. |
 | **§ 5C1.2 scope** | The safety valve was applied to **any** mandatory minimum. § 5C1.2 reaches only 21 U.S.C. §§ 841, 844, 846, 960, 963 and 46 U.S.C. §§ 70503, 70506. | A minimum the safety valve cannot touch — an ACCA or § 924(c) term — was being relieved. The engine now leaves it standing and says why. |
 | **Appendix A — 18 U.S.C. § 1349** | Encoded with § 2B1.1 primary. The index maps § 1349 to **§ 2X1.1 alone**, which then directs to the object offense. | Wrong primary guideline on a common fraud-conspiracy charge. |
@@ -77,15 +89,19 @@ regression fails the suite rather than reaching a worksheet.
 
 ### Still unverified
 
-- § 2C1.1, § 2S1.1, § 2T1.1, § 2L1.2 characteristics and their subsection numbering
 - **18 U.S.C. § 513** — the Appendix A pairing could not be resolved. The index is
   laid out in two columns that interleave when flattened, and this entry sits where
   the columns cannot be told apart. It may map to § 2B1.1 rather than § 2B5.1. The
   entry carries a note saying so.
 - Statutory maxima for the non-drug, non-firearm statutes in `data/statutes.ts`
-- § 5B1.1 probation eligibility and the § 5C1.1 zone rules quoted in the results
 - § 1B1.3 relevant conduct, § 2X1.1, and § 3D1.2's grouping tests
-- § 929(a) and § 844(h), which § 2K2.4 also covers and which are not encoded
+- § 2C1.1(c) and § 2S1.1's cross references, and the § 2K2.1(c)(1) cross reference
+- The § 5C1.1(e) schedule of substitute punishments
+- Chapter 2 guidelines outside the ten encoded, which fall back to manual entry
+
+Every table, every Chapter 3 adjustment, all of Chapter 4's scoring rules,
+§§ 5B1.1, 5C1.1, 5C1.2, 5D1.2, 5E1.2, 5G1.1 and 5G1.2, and all ten encoded
+Chapter 2 guidelines have now been checked against the manual.
 
 ### A note on method
 

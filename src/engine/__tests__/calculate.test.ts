@@ -808,3 +808,92 @@ describe('statutory penalties as verified', () => {
     expect(drugCase(ALL_SAFETY_VALVE).statutory.minMonths).toBe(0);
   });
 });
+
+describe('remaining Chapter 2 guidelines, as verified against the manual', () => {
+  const count = (statuteId: string, socs: { id: string }[], extra = {}) =>
+    calculate(makeCase({ counts: [makeCount({ id: 'c1', statuteId, socs, ...extra })] }));
+
+  it('§ 2C1.1(b)(4): public official facilitating entry or documents', () => {
+    const result = count('18:201(b)', [
+      { id: 'base:official' },
+      { id: 'facilitated-entry-or-document' },
+    ]);
+    expect(result.combinedOffenseLevel).toBe(14 + 2);
+  });
+
+  it('§ 2C1.1(b)(3) floors at 18', () => {
+    const result = count('18:201(b)', [{ id: 'base:other' }, { id: 'high-level-official' }]);
+    // 12 + 4 = 16, floored to 18.
+    expect(result.combinedOffenseLevel).toBe(18);
+  });
+
+  it('§ 2S1.1(b)(2): the tiers are mutually exclusive, greatest applying', () => {
+    const result = count(
+      '18:1956',
+      [{ id: 'base:a2' }, { id: 'convicted-1957' }, { id: 'business-of-laundering' }],
+      { loss: { actualLoss: 100_000 } },
+    );
+    // 8 + 8 (loss over $95,000) + 4 (in the business), not also +1 for § 1957.
+    expect(result.combinedOffenseLevel).toBe(20);
+  });
+
+  it('§ 2T1.1(b)(1) floors at 12', () => {
+    const result = count('26:7201', [{ id: 'criminal-income' }], {
+      loss: { actualLoss: 3_000 },
+    });
+    // Tax table gives 8 for $3,000, +2 = 10, floored to 12.
+    expect(result.combinedOffenseLevel).toBe(12);
+  });
+
+  it('§ 2L1.2 applies the greatest tier in each set', () => {
+    const result = count('8:1326', [
+      { id: 'before-13m' },
+      { id: 'before-5y' },
+      { id: 'after-any' },
+    ]);
+    // 8 + 10 (greatest of the "before" set) + 4 (the only "after" entry).
+    expect(result.combinedOffenseLevel).toBe(22);
+  });
+
+  it('§ 2L1.2 scores the misdemeanor tiers', () => {
+    expect(count('8:1326', [{ id: 'prior-1325a-misdemeanors' }]).combinedOffenseLevel).toBe(10);
+    expect(count('8:1326', [{ id: 'before-misd' }]).combinedOffenseLevel).toBe(10);
+  });
+});
+
+describe('§ 5B1.1 probation bars, as verified against the manual', () => {
+  it('bars probation for a Class A or B felony even in Zone A', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:1344', // 30-year maximum: a Class B felony
+            guidelineOverride: '2B1.1',
+            manualBaseLevel: 1,
+          }),
+        ],
+      }),
+    );
+    expect(result.chapter5.zone).toBe('A');
+    expect(result.chapter5.probationAvailable).toBe(false);
+    expect(result.chapter5.probationNote).toContain('Class B felony');
+  });
+
+  it('authorizes probation in Zone A for a lesser-class felony', () => {
+    const result = calculate(
+      makeCase({
+        counts: [
+          makeCount({
+            id: 'c1',
+            statuteId: '18:1001', // 5-year maximum: a Class D felony
+            guidelineOverride: '2B1.1',
+            manualBaseLevel: 1,
+          }),
+        ],
+      }),
+    );
+    expect(result.chapter5.probationAvailable).toBe(true);
+    expect(result.chapter5.probationNote).toContain('§ 5B1.1(a)(1)');
+  });
+});

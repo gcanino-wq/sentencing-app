@@ -301,20 +301,36 @@ export function computeChapter5(
 
   const zone = zoneForRange(range);
   const zoneNotes: Record<string, string> = {
-    A: 'Zone A: probation is authorized without a condition of confinement. § 5B1.1(a)(1).',
-    B: 'Zone B: probation is authorized with a condition of intermittent confinement, community confinement, or home detention. § 5C1.1(c).',
-    C: 'Zone C: at least half the minimum term must be satisfied by imprisonment; the remainder may be served in community confinement or home detention. § 5C1.1(d).',
+    A: 'Zone A: a sentence of imprisonment is not required unless the applicable Chapter Two guideline expressly requires one. § 5C1.1(b).',
+    B: 'Zone B: the minimum term may be satisfied by imprisonment, by imprisonment of at least one month plus a substitute of community confinement or home detention, or by probation with substitute conditions. § 5C1.1(c).',
+    C: 'Zone C: at least one-half of the minimum term must be satisfied by imprisonment; the remainder may be served in community confinement or home detention. § 5C1.1(d).',
     D: 'Zone D: the minimum term must be satisfied by a sentence of imprisonment. § 5C1.1(f).',
   };
+
+  // § 5B1.1(b): probation is barred outright for a Class A or B felony, whatever
+  // the zone, and by any mandatory minimum term.
+  const classBarsProbation = cls === 'A' || cls === 'B';
+  const probationAvailable =
+    (zone === 'A' || zone === 'B') && !classBarsProbation && statutory.minMonths === 0;
+
+  let probationNote: string;
+  if (classBarsProbation) {
+    probationNote = `Probation is not available — the offense of conviction is a Class ${cls} felony. § 5B1.1(b)(1); 18 U.S.C. § 3561(a)(1).`;
+  } else if (statutory.minMonths > 0) {
+    probationNote = `Probation is not available — a mandatory minimum term of ${statutory.minMonths} months applies. § 5B1.1(b)(2).`;
+  } else if (zone === 'A') {
+    probationNote = `Probation is authorized. § 5B1.1(a)(1). ${zoneNotes.A}`;
+  } else if (zone === 'B') {
+    probationNote = `Probation is authorized with a condition requiring intermittent confinement, community confinement, or home detention. § 5B1.1(a)(2). ${zoneNotes.B}`;
+  } else {
+    probationNote = zoneNotes[zone] ?? '';
+  }
 
   return {
     supervisedRelease,
     fine: { ...fineRange(offenseLevel), citation: '§ 5E1.2(c)(3)' },
-    probationAvailable: zone === 'A' || zone === 'B',
-    probationNote:
-      statutory.minMonths > 0
-        ? `Probation is not available — a mandatory minimum term of ${statutory.minMonths} months applies. § 5B1.1(b)(2).`
-        : zoneNotes[zone] ?? '',
+    probationAvailable,
+    probationNote,
     zone,
     zoneNote: zoneNotes[zone] ?? '',
   };
