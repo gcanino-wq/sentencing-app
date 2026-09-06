@@ -67,6 +67,12 @@ the range moves from 46–57 to 37–46 months.
   reporting life at 43.
 - Export saves nothing yet — the button only marks the worksheet as saved.
 
+## Verification
+
+`VERIFICATION.md` records what has been checked against the Guidelines Manual,
+what was corrected, and what is still unverified. Read it before relying on a
+figure this app produces.
+
 ## Disclaimer
 
 The Guidelines are advisory. This produces an estimate from the facts entered

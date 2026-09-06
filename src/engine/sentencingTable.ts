@@ -4,7 +4,8 @@
  * MINS[offenseLevel] holds the minimum of the range, in months, for each of the
  * six criminal history categories. The maximum is not stored: the table is
  * constructed so that each range's top is the greater of (min + 6) months and
- * 125% of the minimum, capped at 360 months / life.
+ * 125% of the minimum. A minimum of 360 prints as 360–life; above that the
+ * table does not go, so nothing is capped.
  */
 export const MINS: Record<number, readonly number[]> = {
   1: [0, 0, 0, 0, 0, 0],
@@ -27,8 +28,8 @@ export const MINS: Record<number, readonly number[]> = {
   18: [27, 30, 33, 41, 51, 57],
   19: [30, 33, 37, 46, 57, 63],
   20: [33, 37, 41, 51, 63, 70],
-  21: [37, 41, 46, 57, 70, 78],
-  22: [41, 46, 51, 63, 78, 84],
+  21: [37, 41, 46, 57, 70, 77],
+  22: [41, 46, 51, 63, 77, 84],
   23: [46, 51, 57, 70, 84, 92],
   24: [51, 57, 63, 77, 92, 100],
   25: [57, 63, 70, 84, 100, 110],

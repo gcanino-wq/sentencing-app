@@ -1,4 +1,4 @@
-import { categoryIndex, criminalHistoryPoints } from './criminalHistory';
+import { categoryIndex, criminalHistory } from './criminalHistory';
 import {
   baseLevel,
   lossAdjustment,
@@ -30,7 +30,11 @@ export interface Calculation {
   acc: number;
   /** Worksheet A line 9 — total offense level, floored at 1. */
   total: number;
-  /** Criminal history points. */
+  /** Criminal history points from prior sentences, §4A1.1(a)–(d). */
+  priorPts: number;
+  /** The §4A1.1(e) status point: 1 or 0. */
+  status: number;
+  /** Total criminal history points. */
   pts: number;
   /** 0-based criminal history category index. */
   ci: number;
@@ -58,9 +62,26 @@ export function calculate(facts: CaseFacts, options: CalculationOptions = {}): C
   const acc = options.noAcceptance ? 0 : -Number(facts.acceptance || 0);
   const total = Math.max(1, adjusted + acc);
 
-  const pts = criminalHistoryPoints(facts);
-  const ci = categoryIndex(pts);
+  const ch = criminalHistory(facts);
+  const ci = categoryIndex(ch.total);
   const range = rangeFor(total, ci);
 
-  return { base, loss, vic, soc, ch2, role, obs, adjusted, acc, total, pts, ci, range, zone: zoneFor(range) };
+  return {
+    base,
+    loss,
+    vic,
+    soc,
+    ch2,
+    role,
+    obs,
+    adjusted,
+    acc,
+    total,
+    priorPts: ch.priors,
+    status: ch.status,
+    pts: ch.total,
+    ci,
+    range,
+    zone: zoneFor(range),
+  };
 }

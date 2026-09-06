@@ -43,6 +43,54 @@ describe('worksheets', () => {
     expect(lines.find((l) => l.id === 'A1')!.contested).toBe(false);
   });
 
+  it('shows the status point on its own line when it is scored', () => {
+    const facts = {
+      ...DEFAULT_FACTS,
+      statusPoints: true,
+      priors: [{ desc: 'One', meta: '2019', pts: 7 }],
+    };
+    const lines = flattenWorksheets(build(facts));
+    const status = lines.find((l) => l.id === 'Cst')!;
+    expect(status.value).toBe('+1');
+    expect(status.cite).toBe('§4A1.1(e)');
+    // Worksheet C has to foot: priors plus the status point.
+    expect(lines.find((l) => l.id === 'Ctot')!.value).toBe('8');
+  });
+
+  it('shows no status point when the subtotal is under seven', () => {
+    const facts = {
+      ...DEFAULT_FACTS,
+      statusPoints: true,
+      priors: [{ desc: 'One', meta: '2019', pts: 6 }],
+    };
+    const lines = flattenWorksheets(build(facts));
+    expect(lines.find((l) => l.id === 'Cst')!.value).toBe('0');
+    expect(lines.find((l) => l.id === 'Ctot')!.value).toBe('6');
+  });
+
+  it('cites the loss and victim lines from the facts rather than the demo', () => {
+    const lines = flattenWorksheets(
+      build({ ...DEFAULT_FACTS, loss: 50_000, victims: 2, hardship: 'none', socs: [] }),
+    );
+    const at = (id: string) => lines.find((l) => l.id === id)!;
+    expect(at('A2b').cite).toBe('§2B1.1(b)(1)(D)');
+    expect(at('A2b').excerpt).toContain('more than $40,000');
+    expect(at('A2b').value).toBe('+6');
+    expect(at('A2c').cite).toBe('§2B1.1(b)(2)');
+    expect(at('A2c').excerpt).toContain('fewer than 10');
+    expect(at('A2c').value).toBe('0');
+  });
+
+  it('scores mass-marketing on line 2(c) and not again on 2(d)', () => {
+    const lines = flattenWorksheets(
+      build({ ...DEFAULT_FACTS, victims: 2, hardship: 'none', socs: ['mass'] }),
+    );
+    const at = (id: string) => lines.find((l) => l.id === id)!;
+    expect(at('A2c').cite).toBe('§2B1.1(b)(2)(A)');
+    expect(at('A2c').value).toBe('+2');
+    expect(at('A2d').value).toBe('0');
+  });
+
   it('gives Worksheet C one line per prior plus the three standing lines', () => {
     const facts = {
       ...DEFAULT_FACTS,

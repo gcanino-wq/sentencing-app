@@ -51,9 +51,9 @@ export function lineMeta(facts: CaseFacts): Record<string, LineMeta> {
     A2c: {
       kind: 'choice',
       value: facts.hardship,
-      text: 'If the offense (i) involved 10 or more victims; (ii) was committed through mass-marketing; or (iii) resulted in substantial financial hardship to one or more victims, increase by 2 levels.',
+      text: 'If the offense (i) involved 10 or more victims; (ii) was committed through mass-marketing; or (iii) resulted in substantial financial hardship to one or more victims, increase by 2 levels. The three are alternatives: reaching more than one of them still adds only 2.',
       options: [
-        { value: 'none', label: 'No victim-count or hardship finding', delta: '+0' },
+        { value: 'none', label: 'No victim-count or hardship finding', delta: facts.socs.includes('mass') ? '+2 · mass-marketing' : '+0' },
         { value: '1', label: '10+ victims, or hardship to 1 or more', delta: '+2' },
         { value: '5', label: 'Substantial hardship to 5 or more victims', delta: '+4' },
         { value: '25', label: 'Substantial hardship to 25 or more victims', delta: '+6' },
