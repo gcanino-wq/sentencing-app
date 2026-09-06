@@ -1,4 +1,5 @@
 import { money } from './format';
+import { chapterTwoTotal, type ChapterTwo, type Guideline, type OffenseCharacteristic } from './guideline';
 import type { CaseFacts, RoleFinding, SocKey } from './types';
 
 /**
@@ -125,3 +126,60 @@ export function socCite(socs: readonly SocKey[]): string {
   const found = cites.filter(([key]) => socs.includes(key)).map(([, cite]) => cite);
   return found.length ? found.join(' · ') : '§2B1.1(b)';
 }
+
+/**
+ * §2B1.1 as a Chapter 2 guideline: base offense level under (a), then the
+ * characteristics under (b) that this app scores — loss, the (b)(2) victim and
+ * hardship prong, and the (b)(9)/(b)(10) conduct findings.
+ */
+export function computeChapterTwo(facts: CaseFacts): ChapterTwo {
+  const base = baseLevel(facts.statMax);
+  const loss = lossAdjustment(Number(facts.loss));
+  const vic = victimAdjustment(facts);
+  const soc = socAdjustment(facts.socs);
+
+  const characteristics: OffenseCharacteristic[] = [
+    {
+      id: 'A2b',
+      num: '2(b)',
+      label: 'Specific Offense Characteristic — loss',
+      cite: loss ? '§2B1.1(b)(1)(' + lossSubsection(loss) + ')' : '§2B1.1(b)(1)(A)',
+      excerpt: money(facts.loss) + ' loss · ' + lossExcerpt(loss),
+      levels: loss,
+    },
+    {
+      id: 'A2c',
+      num: '2(c)',
+      label: 'Specific Offense Characteristic — victims',
+      cite: victimCite(vic),
+      excerpt: victimProng(facts),
+      levels: vic,
+    },
+    {
+      id: 'A2d',
+      num: '2(d)',
+      label: 'Specific Offense Characteristic — conduct',
+      cite: socCite(facts.socs),
+      excerpt: socLabels(facts.socs).join(' · ') || 'none applied',
+      levels: soc,
+    },
+  ];
+
+  return {
+    base,
+    baseCite: facts.statMax >= 20 ? '§2B1.1(a)(1)' : '§2B1.1(a)(2)',
+    baseExcerpt:
+      facts.statMax >= 20
+        ? 'statutory maximum of 20 years or more'
+        : 'statutory maximum under 20 years',
+    characteristics,
+    ...chapterTwoTotal(base, characteristics),
+  };
+}
+
+export const guideline2B1_1: Guideline = {
+  id: '2B1.1',
+  cite: '§2B1.1',
+  title: 'Larceny, Embezzlement, and Other Forms of Theft; Offenses Involving Stolen Property; Property Damage or Destruction; Fraud and Deceit',
+  compute: computeChapterTwo,
+};

@@ -43,13 +43,19 @@ Anything marked **unverified** needs a human with the Manual in front of them.
 
 ## Not implemented — nothing here to verify
 
-Despite appearing in the statute search and the matter list, these compute
-nothing. There is no table, no base offense level, and no specific offense
-characteristic for any of them:
+§2K2.1, §2D1.1 and §2D2.1 are now named in the guideline registry
+(`src/engine/guidelines.ts`) and carry their official titles, but none of them
+has a `compute`. Asking the engine to score a case under one raises rather than
+returning a number, so an unimplemented guideline cannot silently produce an
+offense level. The authoritative tables they need — §2K2.1(a) base levels,
+§2K2.1(b) characteristics including the (b)(5) machinegun-conversion-device
+tiers added effective Nov. 1 2025, and the §2D1.1(c) Drug Quantity Table —
+have not been entered, because the Manual was not reachable.
 
-- **§2B3.1 (robbery)** — absent entirely.
-- **§2K2.1 (firearms)** — present only as the display tag `'§2K2.1'` on a sample matter.
-- **§2D1.1 (drugs)** — absent entirely; there is no drug quantity table.
+- **§2B3.1 (robbery)** — absent entirely, not even registered.
+- **§2K2.1 (firearms)** — registered, does not compute.
+- **§2D1.1 (drug trafficking)** — registered, does not compute; there is no drug quantity table.
+- **§2D2.1 (simple possession)** — registered, does not compute.
 - §3D1.4 unit math for multiple counts (Worksheet B is scaffolding).
 - §4B1.1 career offender and §4B1.4 ACCA (flags on Worksheet D, not override math).
 - §4C1.1 zero-point reduction (reported as eligible, never applied to the total).
@@ -57,4 +63,6 @@ characteristic for any of them:
 
 The Nov. 1, 2025 amendments to §2B3.1, §2K2.1 and §2D1.1 therefore have nothing
 in this codebase to apply to. Implementing those guidelines is new work, not
-verification, and should start from the Manual rather than from this app.
+verification, and must start from the Manual rather than from this app or from
+recollection: a wrong drug quantity threshold or firearm base level moves a
+sentence by years, and no amount of internal consistency will catch it.

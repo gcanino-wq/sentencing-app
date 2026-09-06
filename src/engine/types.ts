@@ -1,3 +1,5 @@
+import type { GuidelineId } from './guideline';
+
 /** How the criminal history score is arrived at. */
 export type CriminalHistoryMode = 'guided' | 'direct';
 
@@ -18,6 +20,8 @@ export interface PriorSentence {
 
 /** Every fact the calculation reads. */
 export interface CaseFacts {
+  /** The Chapter 2 guideline the count is scored under. Defaults to §2B1.1. */
+  guideline?: GuidelineId;
   /** Statutory maximum for the count of conviction, in years. */
   statMax: number;
   /** Loss under §2B1.1(b)(1), in dollars. */

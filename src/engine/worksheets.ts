@@ -1,14 +1,7 @@
 import type { Calculation } from './calculate';
 import { priorSubsection } from './criminalHistory';
 import { money, sgn } from './format';
-import {
-  lossExcerpt,
-  lossSubsection,
-  socCite,
-  socLabels,
-  victimCite,
-  victimProng,
-} from './guideline2B1_1';
+import { guidelineFor } from './guidelines';
 import { lineMeta } from './lineMeta';
 import { CATS } from './sentencingTable';
 import type { CaseFacts } from './types';
@@ -70,11 +63,17 @@ export function buildWorksheets(
     editable: id in editable,
   });
 
+  const guideline = guidelineFor(facts.guideline);
+  const { baseCite, baseExcerpt, characteristics, cap } = calc.ch2Result;
+
   const a: WorksheetLine[] = [
-    line('A1', '1.', 'Base Offense Level', facts.statMax >= 20 ? '§2B1.1(a)(1)' : '§2B1.1(a)(2)', facts.statMax >= 20 ? 'statutory maximum of 20 years or more' : 'statutory maximum under 20 years', String(calc.base)),
-    line('A2b', '2(b)', 'Specific Offense Characteristic — loss', calc.loss ? '§2B1.1(b)(1)(' + lossSubsection(calc.loss) + ')' : '§2B1.1(b)(1)(A)', money(facts.loss) + ' loss · ' + lossExcerpt(calc.loss), sgn(calc.loss)),
-    line('A2c', '2(c)', 'Specific Offense Characteristic — victims', victimCite(calc.vic), victimProng(facts), sgn(calc.vic)),
-    line('A2d', '2(d)', 'Specific Offense Characteristic — conduct', socCite(facts.socs), socLabels(facts.socs).join(' · ') || 'none applied', sgn(calc.soc)),
+    line('A1', '1.', 'Base Offense Level', baseCite, baseExcerpt, String(calc.base)),
+    ...characteristics.map((soc) =>
+      line(soc.id, soc.num, soc.label, soc.cite, soc.excerpt, sgn(soc.levels)),
+    ),
+    ...(cap
+      ? [line('A2cap', '2(z)', 'Cumulative Limit on Specific Offense Characteristics', cap.cite, 'capped at level ' + cap.levels, String(cap.levels))]
+      : []),
     line('A3', '3.', 'Victim-Related Adjustment', 'Ch. 3, Pt. A', 'no vulnerable-victim or official-victim finding', '+0'),
     line('A4', '4.', 'Adjustment for Role in the Offense', 'Ch. 3, Pt. B', facts.role === 'none' ? 'no aggravating or mitigating role' : 'role adjustment applied', sgn(calc.role)),
     line('A5', '5.', 'Adjustment for Obstruction of Justice', 'Ch. 3, Pt. C', facts.obstruction ? 'obstruction found' : 'no obstruction finding', sgn(calc.obs)),
@@ -85,7 +84,7 @@ export function buildWorksheets(
   ];
 
   const b: WorksheetLine[] = [
-    line('B1', '1.', 'Adjusted Offense Level for each Group', '§3D1.2', 'Group 1 — Count 1, § 1343', String(calc.adjusted)),
+    line('B1', '1.', 'Adjusted Offense Level for each Group', '§3D1.2', 'Group 1 — Count 1, ' + guideline.cite, String(calc.adjusted)),
     line('B2', '2.', 'Number of Units', '§3D1.4', 'one group · 1 unit', '1'),
     line('B3', '3.', 'Increase in Offense Level', '§3D1.4 table', '1 unit — no increase', '+0'),
     line('B4', '4.', 'Combined Adjusted Offense Level', '§3D1.4', 'equals the single group', String(calc.adjusted)),

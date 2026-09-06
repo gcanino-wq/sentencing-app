@@ -1,22 +1,20 @@
 import { categoryIndex, criminalHistory } from './criminalHistory';
-import {
-  baseLevel,
-  lossAdjustment,
-  roleAdjustment,
-  socAdjustment,
-  victimAdjustment,
-} from './guideline2B1_1';
+import type { ChapterTwo } from './guideline';
+import { roleAdjustment } from './guideline2B1_1';
+import { guidelineFor } from './guidelines';
 import { rangeFor, zoneFor, type GuidelineRange, type Zone } from './sentencingTable';
 import type { CaseFacts } from './types';
 
 export interface Calculation {
-  /** §2B1.1(a) base offense level. */
+  /** The Chapter 2 guideline this case was scored under. */
+  ch2Result: ChapterTwo;
+  /** Chapter 2 base offense level. */
   base: number;
-  /** §2B1.1(b)(1) loss adjustment. */
+  /** §2B1.1(b)(1) loss adjustment. Zero under guidelines without a loss table. */
   loss: number;
   /** §2B1.1(b)(2) victim / hardship adjustment. */
   vic: number;
-  /** Specific offense characteristics under §2B1.1(b). */
+  /** The remaining specific offense characteristics. */
   soc: number;
   /** Chapter 2 subtotal: base plus every specific offense characteristic. */
   ch2: number;
@@ -49,11 +47,20 @@ export interface CalculationOptions {
 
 /** Runs the whole worksheet, from base offense level through zone. */
 export function calculate(facts: CaseFacts, options: CalculationOptions = {}): Calculation {
-  const base = baseLevel(facts.statMax);
-  const loss = lossAdjustment(Number(facts.loss));
-  const vic = victimAdjustment(facts);
-  const soc = socAdjustment(facts.socs);
-  const ch2 = base + loss + vic + soc;
+  const guideline = guidelineFor(facts.guideline);
+  if (!guideline.compute) {
+    throw new Error(
+      guideline.cite + ' is not implemented — the engine cannot produce an offense level for it.',
+    );
+  }
+  const ch2Result = guideline.compute(facts);
+  const base = ch2Result.base;
+  const ch2 = ch2Result.total;
+  const levelsFor = (id: string) =>
+    ch2Result.characteristics.find((soc) => soc.id === id)?.levels ?? 0;
+  const loss = levelsFor('A2b');
+  const vic = levelsFor('A2c');
+  const soc = ch2 - base - loss - vic;
 
   const role = roleAdjustment(facts.role);
   const obs = facts.obstruction ? 2 : 0;
@@ -67,6 +74,7 @@ export function calculate(facts: CaseFacts, options: CalculationOptions = {}): C
   const range = rangeFor(total, ci);
 
   return {
+    ch2Result,
     base,
     loss,
     vic,
